@@ -2,28 +2,23 @@ slick = require 'slick'
 
 module.exports =
 class Selector
-  constructor: (@source) ->
+  @create: (source) ->
+    new this(ast) for ast in slick.parse(source)
 
-  getAst: ->
-    @ast ?= slick.parse(@source)
+  constructor: (@selector) ->
 
   matches: (scopeChain) ->
-    scopeChainAst = slick.parse(scopeChain)[0]
-    for selectorAst in @getAst()
-      if @selectorMatchesScopeChain(selectorAst, scopeChainAst)
-        return true
-    false
+    scopeChain = slick.parse(scopeChain)[0]
 
-  selectorMatchesScopeChain: (selector, scopeChain) ->
-    selectorIndex = selector.length - 1
+    selectorIndex = @selector.length - 1
     scopeIndex = scopeChain.length - 1
 
-    return false unless @selectorComponentMatchesScope(selector[selectorIndex], scopeChain[scopeIndex])
+    return false unless @selectorComponentMatchesScope(@selector[selectorIndex], scopeChain[scopeIndex])
 
     selectorIndex--
     scopeIndex--
     while selectorIndex >= 0 and scopeIndex >= 0
-      selectorIndex-- if @selectorComponentMatchesScope(selector[selectorIndex], scopeChain[scopeIndex])
+      selectorIndex-- if @selectorComponentMatchesScope(@selector[selectorIndex], scopeChain[scopeIndex])
       scopeIndex--
 
     selectorIndex < 0

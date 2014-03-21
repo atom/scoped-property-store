@@ -1,7 +1,7 @@
 Selector = require '../src/selector'
 
 describe "Selector", ->
-  S = (string) -> new Selector(string)
+  S = (string) -> Selector.create(string)[0]
 
   describe "::matches(scopeChain)", ->
     describe "for selectors with no combinators", ->
