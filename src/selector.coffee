@@ -21,6 +21,11 @@ class Selector
     @selectorComponentMatchesScope(selector[selectorIndex], scopeChain[scopeIndex])
 
   selectorComponentMatchesScope: (selectorComponent, scope) ->
-    for className in selectorComponent.classList
-      return false unless scope.classes[className]?
+    if selectorComponent.classList?
+      for className in selectorComponent.classList
+        return false unless scope.classes[className]?
+
+    if selectorComponent.tag?
+      return false unless selectorComponent.tag is scope.tag
+
     true
