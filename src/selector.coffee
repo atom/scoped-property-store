@@ -13,12 +13,14 @@ class Selector
     selectorIndex = @selector.length - 1
     scopeIndex = scopeChain.length - 1
 
-    return false unless @selectorComponentMatchesScope(@selector[selectorIndex], scopeChain[scopeIndex])
-
-    selectorIndex--
-    scopeIndex--
+    requireMatch = true
     while selectorIndex >= 0 and scopeIndex >= 0
-      selectorIndex-- if @selectorComponentMatchesScope(@selector[selectorIndex], scopeChain[scopeIndex])
+      if @selectorComponentMatchesScope(@selector[selectorIndex], scopeChain[scopeIndex])
+        requireMatch = @selector[selectorIndex].combinator is '>'
+        selectorIndex--
+      else if requireMatch
+        return false
+
       scopeIndex--
 
     selectorIndex < 0
