@@ -1,14 +1,19 @@
 slick = require 'slick'
 
+indexCounter = 0
+
 module.exports =
 class Selector
   @create: (source) ->
     new this(ast) for ast in slick.parse(source)
 
   constructor: (@selector) ->
+    @specificity = @calculateSpecificity()
+    @index = indexCounter++
 
   matches: (scopeChain) ->
-    scopeChain = slick.parse(scopeChain)[0]
+    if typeof scopeChain is 'string'
+      scopeChain = slick.parse(scopeChain)[0]
 
     selectorIndex = @selector.length - 1
     scopeIndex = scopeChain.length - 1
@@ -41,3 +46,26 @@ class Selector
         return false unless scopeAttributes[attribute.name]?.value is attribute.value
 
     true
+
+  compare: (other) ->
+    if other.specificity is @specificity
+      other.index - @index
+    else
+      other.specificity - @specificity
+
+  calculateSpecificity: ->
+    a = 0
+    b = 0
+    c = 0
+
+    for selectorComponent in @selector
+      if selectorComponent.classList?
+        b += selectorComponent.classList.length
+
+      if selectorComponent.attributes?
+        b += selectorComponent.attributes.length
+
+      if selectorComponent.tag?
+        c += 1
+
+    (a * 100) + (b * 10) + (c * 1)
