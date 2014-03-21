@@ -18,7 +18,15 @@ class Selector
     selectorIndex = selector.length - 1
     scopeIndex = scopeChain.length - 1
 
-    @selectorComponentMatchesScope(selector[selectorIndex], scopeChain[scopeIndex])
+    return false unless @selectorComponentMatchesScope(selector[selectorIndex], scopeChain[scopeIndex])
+
+    selectorIndex--
+    scopeIndex--
+    while selectorIndex >= 0 and scopeIndex >= 0
+      selectorIndex-- if @selectorComponentMatchesScope(selector[selectorIndex], scopeChain[scopeIndex])
+      scopeIndex--
+
+    selectorIndex < 0
 
   selectorComponentMatchesScope: (selectorComponent, scope) ->
     if selectorComponent.classList?

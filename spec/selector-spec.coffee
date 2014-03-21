@@ -18,3 +18,9 @@ describe "Selector", ->
       it "can match based on attributes", ->
         expect(S('[foo=bar][baz=qux]').matches('div [foo=bar][baz=qux]')).toBe true
         expect(S('[foo=bar][baz=qux]').matches('div [foo=bar]')).toBe false
+
+    describe "for selectors with descendant combinators", ->
+      it "matches based on the ancestry of the chain's rightmost element", ->
+        expect(S('.foo .bar').matches('.baz .foo .bar')).toBe true
+        expect(S('.foo .bar').matches('.baz .bar')).toBe false
+        expect(S('.foo .bar').matches('.foo .baz .bar')).toBe true
