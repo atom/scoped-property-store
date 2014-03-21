@@ -1,23 +1,23 @@
 {
-  "name": "scoped-properties",
+  "name": "scoped-property-store",
   "version": "0.0.0",
   "description": "Store and retrieve properties associated with CSS selectors.",
-  "main": "./lib/scoped-properties",
+  "main": "./lib/scoped-property-store",
   "scripts": {
     "prepublish": "grunt clean lint coffee",
     "test": "grunt test"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/atom/scoped-properties.git"
+    "url": "https://github.com/atom/scoped-property-store.git"
   },
   "bugs": {
-    "url": "https://github.com/atom/scoped-properties/issues"
+    "url": "https://github.com/atom/scoped-property-store/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "http://github.com/atom/scoped-properties/raw/master/LICENSE.md"
+      "url": "http://github.com/atom/scoped-property-store/raw/master/LICENSE.md"
     }
   ],
   "dependencies": {
