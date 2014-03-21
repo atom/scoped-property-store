@@ -10,7 +10,10 @@ class ScopedPropertyStore
   addProperties: (source, propertiesBySelector) ->
     for selectorSource, properties of propertiesBySelector
       for selector in Selector.create(selectorSource)
-        @propertySets.push(new PropertySet(selector, properties))
+        @propertySets.push(new PropertySet(source, selector, properties))
+
+  removeProperties: (source) ->
+    @propertySets = @propertySets.filter (set) -> set.source isnt source
 
   get: (scopeChain, keyPath) ->
     candidateSets = @propertySets.filter (set) -> set.has(keyPath)

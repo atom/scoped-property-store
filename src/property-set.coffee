@@ -2,7 +2,7 @@
 
 module.exports =
 class PropertySet
-  constructor: (@selector, @properties) ->
+  constructor: (@source, @selector, @properties) ->
 
   matches: (scope) ->
     @selector.matches(scope)

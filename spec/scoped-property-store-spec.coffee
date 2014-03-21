@@ -25,3 +25,12 @@ describe "ScopedPropertyStore", ->
 
       expect(store.get('.a.b .c.d', 'x')).toBe 2
       expect(store.get('.a.b .c', 'x')).toBe 1
+
+  describe "::removeProperties(source)", ->
+    it "removes properties previously added with ::addProperties", ->
+      store.addProperties('test1', '.a.b': 'x': 1)
+      store.addProperties('test2', '.a': 'x': 2)
+
+      expect(store.get('.a.b', 'x')).toBe 1
+      store.removeProperties('test1')
+      expect(store.get('.a.b', 'x')).toBe 2
