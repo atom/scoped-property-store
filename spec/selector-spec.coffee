@@ -14,3 +14,7 @@ describe "Selector", ->
         expect(S('p').matches('div p')).toBe true
         expect(S('p').matches('div div')).toBe false
         expect(S('p').matches('div p.foo')).toBe true
+
+      it "can match based on attributes", ->
+        expect(S('[foo=bar][baz=qux]').matches('div [foo=bar][baz=qux]')).toBe true
+        expect(S('[foo=bar][baz=qux]').matches('div [foo=bar]')).toBe false

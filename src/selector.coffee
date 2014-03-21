@@ -28,4 +28,11 @@ class Selector
     if selectorComponent.tag?
       return false unless selectorComponent.tag is scope.tag
 
+    if selectorComponent.attributes?
+      scopeAttributes = {}
+      for attribute in scope.attributes ? []
+        scopeAttributes[attribute.name] = attribute
+      for attribute in selectorComponent.attributes
+        return false unless scopeAttributes[attribute.name]?.value is attribute.value
+
     true
