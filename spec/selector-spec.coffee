@@ -5,17 +5,17 @@ describe "Selector", ->
 
   describe "::matches(scopeChain)", ->
     describe "for selectors with no combinators", ->
-      it "can match based on class name", ->
+      it "can match based on the class name of the rightmost element", ->
         expect(S('.foo').matches('.bar .foo')).toBe true
         expect(S('.foo').matches('.foo .bar')).toBe false
         expect(S('.foo').matches('.bar .foo.bar')).toBe true
 
-      it "can match based on element type", ->
+      it "can match based on the type of the rightmost element", ->
         expect(S('p').matches('div p')).toBe true
         expect(S('p').matches('div div')).toBe false
         expect(S('p').matches('div p.foo')).toBe true
 
-      it "can match based on attributes", ->
+      it "can match based on the attributes of the rightmost element", ->
         expect(S('[foo=bar][baz=qux]').matches('div [foo=bar][baz=qux]')).toBe true
         expect(S('[foo=bar][baz=qux]').matches('div [foo=bar]')).toBe false
 
