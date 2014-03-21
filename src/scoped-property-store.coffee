@@ -13,7 +13,7 @@ class ScopedPropertyStore
         @propertySets.push(new PropertySet(selector, properties))
 
   get: (scopeChain, keyPath) ->
-    candidateSets = @propertySets.filter (set) -> set.properties[keyPath]?
+    candidateSets = @propertySets.filter (set) -> set.has(keyPath)
 
     return unless candidateSets.length > 0
 
@@ -24,6 +24,8 @@ class ScopedPropertyStore
           .filter (set) -> set.matches(scopeChain)
           .sort (a, b) -> a.compare(b)
 
-      return matchingSets[0].properties[keyPath] if matchingSets.length > 0
-      scopeChain.pop()
+      if matchingSets.length > 0
+        return matchingSets[0].get(keyPath)
+      else
+        scopeChain.pop()
     undefined

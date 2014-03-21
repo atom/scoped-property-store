@@ -1,3 +1,5 @@
+{hasKeyPath, valueForKeyPath} = require 'underscore-plus'
+
 module.exports =
 class PropertySet
   constructor: (@selector, @properties) ->
@@ -7,3 +9,9 @@ class PropertySet
 
   compare: (other) ->
     @selector.compare(other.selector)
+
+  has: (keyPath) ->
+    hasKeyPath(@properties, keyPath)
+
+  get: (keyPath) ->
+    valueForKeyPath(@properties, keyPath)
