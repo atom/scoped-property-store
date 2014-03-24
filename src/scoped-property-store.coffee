@@ -34,7 +34,7 @@ class ScopedPropertyStore
   # keyPath - A `.` separated string of keys to traverse in the properties.
   #
   # Returns the property value or `undefined` if none is found.
-  get: (scopeChain, keyPath) ->
+  getPropertyValue: (scopeChain, keyPath) ->
     candidateSets = @propertySets.filter (set) -> set.has(keyPath)
     return unless candidateSets.length > 0
 
