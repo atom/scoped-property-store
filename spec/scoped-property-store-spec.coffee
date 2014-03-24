@@ -26,6 +26,25 @@ describe "ScopedPropertyStore", ->
       expect(store.get('.a.b .c.d', 'x')).toBe 2
       expect(store.get('.a.b .c', 'x')).toBe 1
 
+  describe "::getProperties(scopeChain, keyPath)", ->
+    beforeEach ->
+      store.addProperties 'test',
+        '.a .b .c.d': x: 1, y: 2
+        '.a .b .c': x: 2
+        '.a .b': x: undefined
+        '.a': x: 3
+
+      store.addProperties 'test',
+        '.a .b .c': q: 4
+
+    describe "when a keyPath is provided", ->
+      it "gets all properties matching the given scope that contain the given key path, ordered by specificity", ->
+        expect(store.getProperties('.a .b .c.d', 'x')).toEqual [{x: 1, y: 2}, {x: 2}, {x: undefined}, {x: 3}]
+
+    describe "when no keyPath is provided", ->
+      it "gets all properties matching the given scope", ->
+        expect(store.getProperties('.a .b .c.d')).toEqual [{x: 1, y: 2}, {q: 4}, {x: 2}, {x: undefined}, {x: 3}]
+
   describe "::removeProperties(source)", ->
     it "removes properties previously added with ::addProperties", ->
       store.addProperties('test1', '.a.b': 'x': 1)
