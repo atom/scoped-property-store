@@ -35,19 +35,35 @@ class ScopedPropertyStore
   #
   # Returns the property value or `undefined` if none is found.
   get: (scopeChain, keyPath) ->
-    candidateSets = @propertySets.filter (set) -> set.has(keyPath)
+    result = @getMultiple(scopeChain, keyPath)
+    if result.length is 1
+      result[0]
+    else
+      undefined
 
-    return unless candidateSets.length > 0
+  # Public: Get the values of multiple previously stored key-paths in a given
+  # scope.
+  #
+  # The properties must all belong to the same property set, meaning they were
+  # siblings under the same scope selector in a previous call to
+  # {::addProperties}. If no property set can be found containing all the given
+  # properties, an empty array is returned.
+  #
+  # Returns an {Array}.
+  getMultiple: (scopeChain, keyPaths...) ->
+    candidateSets = @propertySets.filter (set) -> set.hasAll(keyPaths)
+
+    return [] unless candidateSets.length > 0
 
     scopeChain = (scope for scope in slick.parse(scopeChain)[0])
     while scopeChain.length > 0
-      matchingSets =
-        candidateSets
-          .filter (set) -> set.matches(scopeChain)
-          .sort (a, b) -> a.compare(b)
+      matchingSets = candidateSets
+        .filter (set) -> set.matches(scopeChain)
+        .sort (a, b) -> a.compare(b)
 
       if matchingSets.length > 0
-        return matchingSets[0].get(keyPath)
-      else
-        scopeChain.pop()
-    undefined
+        return matchingSets[0].getMultiple(keyPaths)
+
+      scopeChain.pop()
+
+    []
