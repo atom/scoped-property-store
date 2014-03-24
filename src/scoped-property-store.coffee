@@ -36,18 +36,16 @@ class ScopedPropertyStore
   # Returns the property value or `undefined` if none is found.
   get: (scopeChain, keyPath) ->
     candidateSets = @propertySets.filter (set) -> set.has(keyPath)
-
     return unless candidateSets.length > 0
 
-    scopeChain = (scope for scope in slick.parse(scopeChain)[0])
+    scopeChain = @parseScopeChain(scopeChain)
     while scopeChain.length > 0
-      matchingSets =
-        candidateSets
-          .filter (set) -> set.matches(scopeChain)
-          .sort (a, b) -> a.compare(b)
-
+      matchingSets = candidateSets
+        .filter (set) -> set.matches(scopeChain)
+        .sort (a, b) -> a.compare(b)
       if matchingSets.length > 0
         return matchingSets[0].get(keyPath)
       else
         scopeChain.pop()
+
     undefined
