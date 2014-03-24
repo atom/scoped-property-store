@@ -13,14 +13,5 @@ class PropertySet
   has: (keyPath) ->
     hasKeyPath(@properties, keyPath)
 
-  hasAll: (keyPaths) ->
-    for keyPath in keyPaths
-      return false unless hasKeyPath(@properties, keyPath)
-    true
-
   get: (keyPath) ->
     valueForKeyPath(@properties, keyPath)
-
-  getMultiple: (keyPaths) ->
-    for keyPath in keyPaths
-      valueForKeyPath(@properties, keyPath)
