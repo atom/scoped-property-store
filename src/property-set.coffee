@@ -3,6 +3,7 @@
 module.exports =
 class PropertySet
   constructor: (@source, @selector, @properties) ->
+    @name = @source # Supports deprecated usage
 
   matches: (scope) ->
     @selector.matches(scope)
