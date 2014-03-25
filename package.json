@@ -22,7 +22,7 @@
   ],
   "dependencies": {
     "slick": "^1.11.0",
-    "underscore-plus": "^1.1.0"
+    "underscore-plus": "^1.1.1"
   },
   "devDependencies": {
     "coffee-script": "^1.7.0",
