@@ -30,3 +30,9 @@ describe "Selector", ->
         expect(S('.foo > .bar').matches('.baz .foo .bar')).toBe true
         expect(S('.foo > .bar').matches('.baz .bar')).toBe false
         expect(S('.foo > .bar').matches('.foo .baz .bar')).toBe false
+
+    describe "for selectors with :not pseudoclasses", ->
+      it "does not match if the portion of the selector within the negation matches", ->
+        expect(S('.foo:not(.bar, .baz)').matches('.baz .foo.bar')).toBe false
+        expect(S('.foo:not(.bar, .baz)').matches('.baz .foo.baz')).toBe false
+        expect(S('.foo:not(.bar, .baz)').matches('.baz .foo.qux')).toBe true

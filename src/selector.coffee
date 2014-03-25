@@ -5,7 +5,18 @@ indexCounter = 0
 module.exports =
 class Selector
   @create: (source) ->
-    new this(ast) for ast in slick.parse(source)
+    for selectorAst in slick.parse(source)
+      @parsePseudoSelectors(selectorComponent) for selectorComponent in selectorAst
+      new this(selectorAst)
+
+  @parsePseudoSelectors: (selectorComponent) ->
+    return unless selectorComponent.pseudos?
+    for pseudoClass in selectorComponent.pseudos
+      if pseudoClass.name is 'not'
+        selectorComponent.notSelectors ?= []
+        selectorComponent.notSelectors.push(@create(pseudoClass.value)...)
+      else
+        console.warn "Unsupported pseudo-selector: #{pseudoClass.name}"
 
   constructor: (@selector) ->
     @specificity = @calculateSpecificity()
@@ -44,6 +55,10 @@ class Selector
         scopeAttributes[attribute.name] = attribute
       for attribute in selectorComponent.attributes
         return false unless scopeAttributes[attribute.name]?.value is attribute.value
+
+    if selectorComponent.notSelectors?
+      for selector in selectorComponent.notSelectors
+        return false if selector.matches([scope])
 
     true
 
