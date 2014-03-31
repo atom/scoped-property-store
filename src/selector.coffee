@@ -44,7 +44,7 @@ class Selector
   selectorComponentMatchesScope: (selectorComponent, scope) ->
     if selectorComponent.classList?
       for className in selectorComponent.classList
-        return false unless scope.classes[className]?
+        return false unless scope.classes?[className]?
 
     if selectorComponent.tag?
       return false unless selectorComponent.tag is scope.tag or selectorComponent.tag is '*'
