@@ -26,6 +26,16 @@ describe "ScopedPropertyStore", ->
       expect(store.getPropertyValue('.a.b .c.d', 'x')).toBe 2
       expect(store.getPropertyValue('.a.b .c', 'x')).toBe 1
 
+    it "escapes non-whitespace combinators in the scope chain", ->
+      store.addProperties 'test',
+        '.c\\+\\+': a: 1
+        '.c\\>': a: 2
+        '.c\\~': a: 3
+
+      expect(store.getPropertyValue('.c++', 'a')).toBe 1
+      expect(store.getPropertyValue('.c>', 'a')).toBe 2
+      expect(store.getPropertyValue('.c~', 'a')).toBe 3
+
   describe "::getProperties(scopeChain, keyPath)", ->
     beforeEach ->
       store.addProperties 'test',
