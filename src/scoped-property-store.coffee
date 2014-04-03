@@ -7,6 +7,7 @@ module.exports =
 class ScopedPropertyStore
   constructor: ->
     @propertySets = []
+    @escapeCharacterRegex = /[-!"#$%&'*+,/:;=?@|^~()<>{}[\]]/g
 
   # Public: Add scoped properties to be queried with {::get}
   #
@@ -78,5 +79,5 @@ class ScopedPropertyStore
     values
 
   parseScopeChain: (scopeChain) ->
-    scopeChain = scopeChain.replace /[+~>]/g, (match) -> '\\' + match[0]
+    scopeChain = scopeChain.replace @escapeCharacterRegex, (match) -> "\\#{match[0]}"
     scope for scope in slick.parse(scopeChain)[0]

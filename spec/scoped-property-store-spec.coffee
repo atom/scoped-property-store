@@ -31,10 +31,60 @@ describe "ScopedPropertyStore", ->
         '.c\\+\\+': a: 1
         '.c\\>': a: 2
         '.c\\~': a: 3
+        '.c\\-': a: 4
+        '.c\\!': a: 5
+        '.c\\"': a: 6
+        '.c\\#': a: 7
+        '.c\\$': a: 8
+        '.c\\%': a: 9
+        '.c\\&': a: 10
+        '.c\\\'': a: 11
+        '.c\\*': a: 12
+        '.c\\,': a: 13
+        '.c\\/': a: 14
+        '.c\\:': a: 15
+        '.c\\;': a: 16
+        '.c\\=': a: 17
+        '.c\\?': a: 18
+        '.c\\@': a: 19
+        '.c\\|': a: 20
+        '.c\\^': a: 21
+        '.c\\(': a: 22
+        '.c\\)': a: 23
+        '.c\\<': a: 24
+        '.c\\{': a: 25
+        '.c\\}': a: 26
+        '.c\\[': a: 27
+        '.c\\]': a: 28
 
       expect(store.getPropertyValue('.c++', 'a')).toBe 1
       expect(store.getPropertyValue('.c>', 'a')).toBe 2
       expect(store.getPropertyValue('.c~', 'a')).toBe 3
+      expect(store.getPropertyValue('.c-', 'a')).toBe 4
+      expect(store.getPropertyValue('.c!', 'a')).toBe 5
+      expect(store.getPropertyValue('.c"', 'a')).toBe 6
+      expect(store.getPropertyValue('.c#', 'a')).toBe 7
+      expect(store.getPropertyValue('.c$', 'a')).toBe 8
+      expect(store.getPropertyValue('.c%', 'a')).toBe 9
+      expect(store.getPropertyValue('.c&', 'a')).toBe 10
+      expect(store.getPropertyValue('.c\'', 'a')).toBe 11
+      expect(store.getPropertyValue('.c*', 'a')).toBe 12
+      expect(store.getPropertyValue('.c,', 'a')).toBe 13
+      expect(store.getPropertyValue('.c/', 'a')).toBe 14
+      expect(store.getPropertyValue('.c:', 'a')).toBe 15
+      expect(store.getPropertyValue('.c;', 'a')).toBe 16
+      expect(store.getPropertyValue('.c=', 'a')).toBe 17
+      expect(store.getPropertyValue('.c?', 'a')).toBe 18
+      expect(store.getPropertyValue('.c@', 'a')).toBe 19
+      expect(store.getPropertyValue('.c|', 'a')).toBe 20
+      expect(store.getPropertyValue('.c^', 'a')).toBe 21
+      expect(store.getPropertyValue('.c(', 'a')).toBe 22
+      expect(store.getPropertyValue('.c)', 'a')).toBe 23
+      expect(store.getPropertyValue('.c<', 'a')).toBe 24
+      expect(store.getPropertyValue('.c{', 'a')).toBe 25
+      expect(store.getPropertyValue('.c}', 'a')).toBe 26
+      expect(store.getPropertyValue('.c[', 'a')).toBe 27
+      expect(store.getPropertyValue('.c]', 'a')).toBe 28
 
   describe "::getProperties(scopeChain, keyPath)", ->
     beforeEach ->
