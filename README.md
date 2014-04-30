@@ -1,4 +1,4 @@
-# Scoped Property Store [![Build Status](https://travis-ci.org/atom/scoped-property-store?branch=master)](https://travis-ci.org/atom/scoped-property-store)
+# Scoped Property Store [![Build Status](https://travis-ci.org/atom/scoped-property-store.svg?branch=master)](https://travis-ci.org/atom/scoped-property-store)
 
 Stores and retrieves properties associated with CSS selectors.
 
