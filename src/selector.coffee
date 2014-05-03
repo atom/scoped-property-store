@@ -24,7 +24,8 @@ class Selector
 
   matches: (scopeChain) ->
     if typeof scopeChain is 'string'
-      scopeChain = slick.parse(scopeChain)[0]
+      [scopeChain] = slick.parse(scopeChain)
+      return false unless scopeChain?
 
     selectorIndex = @selector.length - 1
     scopeIndex = scopeChain.length - 1

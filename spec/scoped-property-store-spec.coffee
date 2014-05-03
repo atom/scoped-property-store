@@ -85,6 +85,7 @@ describe "ScopedPropertyStore", ->
       expect(store.getPropertyValue('.c}', 'a')).toBe 26
       expect(store.getPropertyValue('.c[', 'a')).toBe 27
       expect(store.getPropertyValue('.c]', 'a')).toBe 28
+      expect(store.getPropertyValue('()', 'a')).toBeUndefined()
 
   describe "::getProperties(scopeChain, keyPath)", ->
     beforeEach ->
