@@ -80,4 +80,4 @@ class ScopedPropertyStore
 
   parseScopeChain: (scopeChain) ->
     scopeChain = scopeChain.replace @escapeCharacterRegex, (match) -> "\\#{match[0]}"
-    scope for scope in slick.parse(scopeChain)[0]
+    scope for scope in slick.parse(scopeChain)[0] ? []
