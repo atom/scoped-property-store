@@ -21,7 +21,7 @@
     }
   ],
   "dependencies": {
-    "slick": "git://github.com/atom/slick.git#452d7da5b1fb7aea0f0307ff0f670f72eb521d15",
+    "slick": "git+https://github.com/atom/slick.git#452d7da5b1fb7aea0f0307ff0f670f72eb521d15",
     "underscore-plus": "^1.1.1",
     "event-kit": "^0.7",
     "grim": "^0.12"
