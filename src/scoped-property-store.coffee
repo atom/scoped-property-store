@@ -17,20 +17,15 @@ class ScopedPropertyStore
   #   later.
   # propertiesBySelector - An {Object} containing CSS-selectors mapping to
   #   {Objects} containing properties. For example: `{'.foo .bar': {x: 1, y: 2}`
+  #
+  # Returns a {Disposable} on which you can call `.dispose()` to remove the
+  # added properties
   addProperties: (source, propertiesBySelector) ->
     compositeDisposable = new CompositeDisposable
     for selectorSource, properties of propertiesBySelector
       for selector in Selector.create(selectorSource)
         compositeDisposable.add @addPropertySet(new PropertySet(source, selector, properties))
     compositeDisposable
-
-  # Public: Remove scoped properties previously added with {::addProperties}
-  #
-  # source - The source (previously provided to to {::addProperties}) of the
-  #   properties to remove.
-  removeProperties: (source) ->
-    deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
-    @propertySets = @propertySets.filter (set) -> set.source isnt source
 
   # Public: Get the value of a previously stored key-path in a given scope.
   #
@@ -82,6 +77,11 @@ class ScopedPropertyStore
       scopeChain.pop()
 
     values
+
+  # Deprecated:
+  removeProperties: (source) ->
+    deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
+    @propertySets = @propertySets.filter (set) -> set.source isnt source
 
   addPropertySet: (propertySet) ->
     @propertySets.push(propertySet)
