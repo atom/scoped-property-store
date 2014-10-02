@@ -1,4 +1,6 @@
 slick = require 'slick'
+{deprecate} = require 'grim'
+{Disposable, CompositeDisposable} = require 'event-kit'
 Selector = require './selector'
 PropertySet = require './property-set'
 
@@ -15,17 +17,15 @@ class ScopedPropertyStore
   #   later.
   # propertiesBySelector - An {Object} containing CSS-selectors mapping to
   #   {Objects} containing properties. For example: `{'.foo .bar': {x: 1, y: 2}`
+  #
+  # Returns a {Disposable} on which you can call `.dispose()` to remove the
+  # added properties
   addProperties: (source, propertiesBySelector) ->
+    compositeDisposable = new CompositeDisposable
     for selectorSource, properties of propertiesBySelector
       for selector in Selector.create(selectorSource)
-        @propertySets.push(new PropertySet(source, selector, properties))
-
-  # Public: Remove scoped properties previously added with {::addProperties}
-  #
-  # source - The source (previously provided to to {::addProperties}) of the
-  #   properties to remove.
-  removeProperties: (source) ->
-    @propertySets = @propertySets.filter (set) -> set.source isnt source
+        compositeDisposable.add @addPropertySet(new PropertySet(source, selector, properties))
+    compositeDisposable
 
   # Public: Get the value of a previously stored key-path in a given scope.
   #
@@ -77,6 +77,17 @@ class ScopedPropertyStore
       scopeChain.pop()
 
     values
+
+  # Deprecated:
+  removeProperties: (source) ->
+    deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
+    @propertySets = @propertySets.filter (set) -> set.source isnt source
+
+  addPropertySet: (propertySet) ->
+    @propertySets.push(propertySet)
+    new Disposable =>
+      index = @propertySets.indexOf(propertySet)
+      @propertySets.splice(index, 1) if index > -1
 
   parseScopeChain: (scopeChain) ->
     scopeChain = scopeChain.replace @escapeCharacterRegex, (match) -> "\\#{match[0]}"

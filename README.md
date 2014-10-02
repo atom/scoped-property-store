@@ -18,7 +18,7 @@ ScopedPropertyScore = require 'scoped-property-store'
 store = new ScopedPropertyScore
 
 # First associate some properties with selectors
-store.addProperties 'some-description',
+disposable = store.addProperties 'some-description',
   '.foo.bar .baz':
     x:
       y: 1
@@ -35,7 +35,6 @@ store.get('div.foo.bar p.baz', 'x.z') # ==> 2
 # Falls back to selectors matching an *ancestor* if necessary
 store.get('div.foo p.baz', 'x.y') # ==> 3
 
-
-# You can also remove properties via their `source` description
-store.removeProperties('some-description')
+# You can also remove properties via the returned Disposable
+disposable.dispose()
 ```

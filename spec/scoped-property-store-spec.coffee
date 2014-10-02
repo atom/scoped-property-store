@@ -106,11 +106,23 @@ describe "ScopedPropertyStore", ->
       it "gets all properties matching the given scope", ->
         expect(store.getProperties('.a .b .c.d')).toEqual [{x: 1, y: 2}, {q: 4}, {x: 2}, {x: undefined}, {x: 3}]
 
-  describe "::removeProperties(source)", ->
-    it "removes properties previously added with ::addProperties", ->
-      store.addProperties('test1', '.a.b': 'x': 1)
-      store.addProperties('test2', '.a': 'x': 2)
+  describe "removing properties", ->
+    describe "when the deprecated ::removeProperties(name) is used", ->
+      it "removes properties previously added with ::addProperties", ->
+        store.addProperties('test1', '.a.b': 'x': 1)
+        store.addProperties('test2', '.a': 'x': 2)
 
-      expect(store.getPropertyValue('.a.b', 'x')).toBe 1
-      store.removeProperties('test1')
-      expect(store.getPropertyValue('.a.b', 'x')).toBe 2
+        expect(store.getPropertyValue('.a.b', 'x')).toBe 1
+        store.removeProperties('test1')
+        expect(store.getPropertyValue('.a.b', 'x')).toBe 2
+
+    describe "when Disposable::dispose() is used", ->
+      it "removes properties previously added with ::addProperties", ->
+        disposable1 = store.addProperties('test1', '.a.b': 'x': 1)
+        disposable2 = store.addProperties('test2', '.a': 'x': 2)
+
+        expect(store.getPropertyValue('.a.b', 'x')).toBe 1
+        disposable1.dispose()
+        expect(store.getPropertyValue('.a.b', 'x')).toBe 2
+        disposable2.dispose()
+        expect(store.getPropertyValue('.a.b', 'x')).toBeUndefined()
