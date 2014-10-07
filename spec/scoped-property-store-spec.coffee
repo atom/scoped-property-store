@@ -126,3 +126,61 @@ describe "ScopedPropertyStore", ->
         expect(store.getPropertyValue('.a.b', 'x')).toBe 2
         disposable2.dispose()
         expect(store.getPropertyValue('.a.b', 'x')).toBeUndefined()
+
+  describe "::propertiesForSource(source)", ->
+    it 'will return all the properties for a given source', ->
+      store.addProperties('a', '.a.b': 'x': 1)
+      store.addProperties('b', '.a': 'x': 2)
+      store.addProperties('b', '.a.b': 'y': 1)
+
+      properties = store.propertiesForSource('b')
+      expect(properties).toEqual [{
+          '*.a':
+            x: 2
+        }, {
+          '*.a.b':
+            y: 1
+        }]
+
+    it 'can compose properties when they have nested properties', ->
+      store.addProperties 'config', '.source.ruby': {foo: {bar: 'ruby'}}
+      store.addProperties 'config', '.source.ruby': {foo: {omg: 'wow'}}
+
+      expect(store.propertiesForSource('b')).toEqual [{
+        '*.ruby.source':
+          foo:
+            bar: 'ruby'
+            omg: 'wow'
+      }]
+
+    it 'can compose properties added at different times for matching keys', ->
+      store.addProperties('b', '.a': 'x': 2)
+      store.addProperties('b', '.a.b': 'y': 1)
+      store.addProperties('b', '.a.b': 'z': 3, 'y': 5)
+      store.addProperties('b', '.o.k': 'y': 10)
+
+      expect(store.propertiesForSource('b')).toEqual [{
+          '*.a':
+            x: 2
+        }, {
+          '*.a.b':
+            y: 5
+            z: 3
+        }, {
+          '*.k.o':
+            y: 10
+        }]
+
+    it 'will break out composite selectors', ->
+      store.addProperties('b', '.a, .a.b, .a.b.c': 'x': 2)
+
+      expect(store.propertiesForSource('b')).toEqual [{
+          '*.a':
+            x: 2
+        }, {
+          '*.a.b':
+            x: 2
+        }, {
+          '*.a.b.c':
+            x: 2
+        }]
