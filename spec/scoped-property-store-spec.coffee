@@ -143,11 +143,11 @@ describe "ScopedPropertyStore", ->
         }]
 
     it 'can compose properties when they have nested properties', ->
-      store.addProperties 'config', '.source.ruby': {foo: {bar: 'ruby'}}
-      store.addProperties 'config', '.source.ruby': {foo: {omg: 'wow'}}
+      store.addProperties 'b', '.a.b': {foo: {bar: 'ruby'}}
+      store.addProperties 'b', '.a.b': {foo: {omg: 'wow'}}
 
       expect(store.propertiesForSource('b')).toEqual [{
-        '*.ruby.source':
+        '*.a.b':
           foo:
             bar: 'ruby'
             omg: 'wow'
