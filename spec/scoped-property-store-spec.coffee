@@ -128,7 +128,7 @@ describe "ScopedPropertyStore", ->
         expect(store.getPropertyValue('.a.b', 'x')).toBeUndefined()
 
   describe "::propertiesForSource(source)", ->
-    it 'will return all the properties for a given source', ->
+    it 'returns all the properties for a given source', ->
       store.addProperties('a', '.a.b': 'x': 1)
       store.addProperties('b', '.a': 'x': 2)
       store.addProperties('b', '.a.b': 'y': 1)
