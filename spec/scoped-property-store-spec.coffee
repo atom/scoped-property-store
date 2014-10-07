@@ -151,7 +151,7 @@ describe "ScopedPropertyStore", ->
           foo:
             bar: 'ruby'
             omg: 'wow'
-      }]
+        }]
 
     it 'can compose properties added at different times for matching keys', ->
       store.addProperties('b', '.a': 'x': 2)
