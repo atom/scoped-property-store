@@ -134,24 +134,21 @@ describe "ScopedPropertyStore", ->
       store.addProperties('b', '.a.b': 'y': 1)
 
       properties = store.propertiesForSource('b')
-      expect(properties).toEqual [{
-          '*.a':
-            x: 2
-        }, {
-          '*.a.b':
-            y: 1
-        }]
+      expect(properties).toEqual
+        '.a':
+          x: 2
+        '.a.b':
+          y: 1
 
     it 'can compose properties when they have nested properties', ->
       store.addProperties 'b', '.a.b': {foo: {bar: 'ruby'}}
       store.addProperties 'b', '.a.b': {foo: {omg: 'wow'}}
 
-      expect(store.propertiesForSource('b')).toEqual [{
-        '*.a.b':
+      expect(store.propertiesForSource('b')).toEqual
+        '.a.b':
           foo:
             bar: 'ruby'
             omg: 'wow'
-        }]
 
     it 'can compose properties added at different times for matching keys', ->
       store.addProperties('b', '.a': 'x': 2)
@@ -159,28 +156,22 @@ describe "ScopedPropertyStore", ->
       store.addProperties('b', '.a.b': 'z': 3, 'y': 5)
       store.addProperties('b', '.o.k': 'y': 10)
 
-      expect(store.propertiesForSource('b')).toEqual [{
-          '*.a':
-            x: 2
-        }, {
-          '*.a.b':
-            y: 5
-            z: 3
-        }, {
-          '*.k.o':
-            y: 10
-        }]
+      expect(store.propertiesForSource('b')).toEqual
+        '.a':
+          x: 2
+        '.a.b':
+          y: 5
+          z: 3
+        '.k.o':
+          y: 10
 
     it 'will break out composite selectors', ->
       store.addProperties('b', '.a, .a.b, .a.b.c': 'x': 2)
 
-      expect(store.propertiesForSource('b')).toEqual [{
-          '*.a':
-            x: 2
-        }, {
-          '*.a.b':
-            x: 2
-        }, {
-          '*.a.b.c':
-            x: 2
-        }]
+      expect(store.propertiesForSource('b')).toEqual
+        '.a':
+          x: 2
+        '.a.b':
+          x: 2
+        '.a.b.c':
+          x: 2

@@ -80,25 +80,20 @@ class ScopedPropertyStore
 
   propertiesForSource: (source) ->
     propertySets = @mergeMatchingPropertySets(@propertySets.filter (set) -> set.source is source)
-    propertySets.map (propertySet) ->
-      prop = {}
-      prop[propertySet.selector.selector] = propertySet.properties
-      prop
+
+    propertiesBySelector = {}
+    for selector, propertySet of propertySets
+      propertiesBySelector[selector] = propertySet.properties
+    propertiesBySelector
 
   mergeMatchingPropertySets: (propertySets) ->
-    merged = []
-
-    findMatchingPropertySet = (propertySet) ->
-      for mergedPropertySet, index in merged
-        return [mergedPropertySet, index] if mergedPropertySet.selectorsEqual(propertySet)
-      null
+    merged = {}
 
     for propertySet in propertySets
-      if matchingPropertySet = findMatchingPropertySet(propertySet)
-        [matchingPropertySet, matchIndex] = matchingPropertySet
-        merged[matchIndex] = matchingPropertySet.merge(propertySet)
+      if matchingPropertySet = merged[propertySet.selector]
+        merged[propertySet.selector] = matchingPropertySet.merge(propertySet)
       else
-        merged.push propertySet
+        merged[propertySet.selector] = propertySet
 
     merged
 

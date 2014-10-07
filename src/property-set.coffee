@@ -11,9 +11,6 @@ class PropertySet
   compare: (other) ->
     @selector.compare(other.selector)
 
-  selectorsEqual: (other) ->
-    @selector.selector is other.selector.selector
-
   merge: (other) ->
     new PropertySet(@source, @selector, deepExtend(other.properties, @properties))
 
