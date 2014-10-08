@@ -51,7 +51,7 @@ class ScopedPropertyStore
 
     undefined
 
-  # Public: Get *all* properties objects matching the given scope chain that
+  # Public: Get *all* property objects matching the given scope chain that
   # contain a value for given key path.
   #
   # scopeChain - This describes a location in the document. It uses the same
@@ -78,6 +78,19 @@ class ScopedPropertyStore
 
     values
 
+  # Public: Get *all* properties for a given source.
+  #
+  # ## Examples
+  #
+  # ```coffee
+  # store.addProperties('some-source', {'.source.ruby': {foo: 'bar'}})
+  # store.addProperties('some-source', {'.source.ruby': {omg: 'wow'}})
+  # store.propertiesForSource('some-source') # => {'.source.ruby': {foo: 'bar', omg: 'wow'}}
+  # ```
+  #
+  # * `source` {String}
+  #
+  # Returns an {Object} in the format {scope: {property: value}}
   propertiesForSource: (source) ->
     propertySets = @mergeMatchingPropertySets(@propertySets.filter (set) -> set.source is source)
 
