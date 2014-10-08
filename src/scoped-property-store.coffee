@@ -78,6 +78,23 @@ class ScopedPropertyStore
 
     values
 
+  propertiesForSource: (source) ->
+    propertySets = @mergeMatchingPropertySets(@propertySets.filter (set) -> set.source is source)
+
+    propertiesBySelector = {}
+    for selector, propertySet of propertySets
+      propertiesBySelector[selector] = propertySet.properties
+    propertiesBySelector
+
+  mergeMatchingPropertySets: (propertySets) ->
+    merged = {}
+    for propertySet in propertySets
+      if matchingPropertySet = merged[propertySet.selector]
+        merged[propertySet.selector] = matchingPropertySet.merge(propertySet)
+      else
+        merged[propertySet.selector] = propertySet
+    merged
+
   # Deprecated:
   removeProperties: (source) ->
     deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'

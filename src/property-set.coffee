@@ -1,4 +1,4 @@
-{hasKeyPath, valueForKeyPath} = require 'underscore-plus'
+{deepExtend, hasKeyPath, valueForKeyPath} = require 'underscore-plus'
 
 module.exports =
 class PropertySet
@@ -10,6 +10,9 @@ class PropertySet
 
   compare: (other) ->
     @selector.compare(other.selector)
+
+  merge: (other) ->
+    new PropertySet(@source, @selector, deepExtend(other.properties, @properties))
 
   has: (keyPath) ->
     hasKeyPath(@properties, keyPath)
