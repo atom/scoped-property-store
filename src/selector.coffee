@@ -1,4 +1,4 @@
-slick = require 'slick'
+slick = require 'atom-slick'
 
 indexCounter = 0
 

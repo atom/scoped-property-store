@@ -1,4 +1,4 @@
-slick = require 'slick'
+slick = require 'atom-slick'
 {deprecate} = require 'grim'
 {Disposable, CompositeDisposable} = require 'event-kit'
 Selector = require './selector'
