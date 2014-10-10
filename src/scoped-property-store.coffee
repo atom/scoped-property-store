@@ -27,6 +27,7 @@ class ScopedPropertyStore
     for selectorSource, properties of propertiesBySelector
       for selector in Selector.create(selectorSource)
         compositeDisposable.add @addPropertySet(new PropertySet(source, selector, properties))
+    @propertySets.sort (a, b) -> a.compare(b)
     compositeDisposable
 
   # Public: Get the value of a previously stored key-path in a given scope.
@@ -42,13 +43,10 @@ class ScopedPropertyStore
 
     scopeChain = @parseScopeChain(originalScopeChain)
     while scopeChain.length > 0
-      matchingSets = @propertySets
-        .filter (set) -> set.matches(scopeChain) and set.has(keyPath)
-        .sort (a, b) -> a.compare(b)
-      if matchingSets.length > 0
-        return @setCachedValue(scopeChain, keyPath, matchingSets[0].get(keyPath))
-      else
-        scopeChain.pop()
+      for set in @propertySets
+        if set.matches(scopeChain) and set.has(keyPath)
+          return @setCachedValue(scopeChain, keyPath, set.get(keyPath))
+      scopeChain.pop()
 
     # We need to cache that we do not have the value, otherwise when the store
     # does not have the value, we'll always miss the cache.
@@ -67,16 +65,12 @@ class ScopedPropertyStore
   # are nested beneath the selectors in {::addProperties}.
   getProperties: (scopeChain, keyPath) ->
     values = []
-    candidateSets = @propertySets
-    candidateSets = @propertySets.filter((set) -> set.has(keyPath)) if keyPath?
-    return values unless candidateSets.length > 0
 
     scopeChain = @parseScopeChain(scopeChain)
     while scopeChain.length > 0
-      matchingSets = candidateSets
-        .filter (set) -> set.matches(scopeChain)
-        .sort (a, b) -> a.compare(b)
-      values.push(matchingSets.map((set) -> set.properties)...)
+      for set in @propertySets
+        if set.matches(scopeChain) and (not keyPath? or set.has(keyPath))
+          values.push(set.properties)
       scopeChain.pop()
 
     values
