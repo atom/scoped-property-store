@@ -8,6 +8,7 @@ PropertySet = require './property-set'
 module.exports =
 class ScopedPropertyStore
   constructor: ->
+    @cache = null
     @propertySets = []
     @escapeCharacterRegex = /[-!"#$%&'*+,/:;=?@|^~()<>{}[\]]/g
 
@@ -21,6 +22,7 @@ class ScopedPropertyStore
   # Returns a {Disposable} on which you can call `.dispose()` to remove the
   # added properties
   addProperties: (source, propertiesBySelector) ->
+    @bustCache()
     compositeDisposable = new CompositeDisposable
     for selectorSource, properties of propertiesBySelector
       for selector in Selector.create(selectorSource)
@@ -35,21 +37,22 @@ class ScopedPropertyStore
   # keyPath - A `.` separated string of keys to traverse in the properties.
   #
   # Returns the property value or `undefined` if none is found.
-  getPropertyValue: (scopeChain, keyPath) ->
-    candidateSets = @propertySets.filter (set) -> set.has(keyPath)
-    return unless candidateSets.length > 0
+  getPropertyValue: (originalScopeChain, keyPath) ->
+    return @getCachedValue(originalScopeChain, keyPath) if @hasCachedValue(originalScopeChain, keyPath)
 
-    scopeChain = @parseScopeChain(scopeChain)
+    scopeChain = @parseScopeChain(originalScopeChain)
     while scopeChain.length > 0
-      matchingSets = candidateSets
-        .filter (set) -> set.matches(scopeChain)
+      matchingSets = @propertySets
+        .filter (set) -> set.matches(scopeChain) and set.has(keyPath)
         .sort (a, b) -> a.compare(b)
       if matchingSets.length > 0
-        return matchingSets[0].get(keyPath)
+        return @setCachedValue(scopeChain, keyPath, matchingSets[0].get(keyPath))
       else
         scopeChain.pop()
 
-    undefined
+    # We need to cache that we do not have the value, otherwise when the store
+    # does not have the value, we'll always miss the cache.
+    @setCachedValue(originalScopeChain, keyPath, undefined)
 
   # Public: Get *all* property objects matching the given scope chain that
   # contain a value for given key path.
@@ -108,17 +111,34 @@ class ScopedPropertyStore
         merged[propertySet.selector] = propertySet
     merged
 
-  # Deprecated:
-  removeProperties: (source) ->
-    deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
-    @propertySets = @propertySets.filter (set) -> set.source isnt source
+  hasCachedValue: (scopeChain, keyPath) ->
+    return false unless @cache? and "#{scopeChain}:#{keyPath}" of @cache
+    true
+
+  getCachedValue: (scopeChain, keyPath) ->
+    @cache ?= {}
+    @cache["#{scopeChain}:#{keyPath}"]
+
+  setCachedValue: (scopeChain, keyPath, value) ->
+    @cache ?= {}
+    @cache["#{scopeChain}:#{keyPath}"] = value
+
+  bustCache: ->
+    @cache = null
 
   addPropertySet: (propertySet) ->
     @propertySets.push(propertySet)
     new Disposable =>
       index = @propertySets.indexOf(propertySet)
       @propertySets.splice(index, 1) if index > -1
+      @bustCache()
 
   parseScopeChain: (scopeChain) ->
     scopeChain = scopeChain.replace @escapeCharacterRegex, (match) -> "\\#{match[0]}"
     scope for scope in slick.parse(scopeChain)[0] ? []
+
+  # Deprecated:
+  removeProperties: (source) ->
+    deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
+    @bustCache()
+    @propertySets = @propertySets.filter (set) -> set.source isnt source
