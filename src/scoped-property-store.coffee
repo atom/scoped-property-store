@@ -8,6 +8,7 @@ PropertySet = require './property-set'
 module.exports =
 class ScopedPropertyStore
   constructor: ->
+    @cache = null
     @propertySets = []
     @escapeCharacterRegex = /[-!"#$%&'*+,/:;=?@|^~()<>{}[\]]/g
 
@@ -21,6 +22,7 @@ class ScopedPropertyStore
   # Returns a {Disposable} on which you can call `.dispose()` to remove the
   # added properties
   addProperties: (source, propertiesBySelector) ->
+    @bustCache()
     compositeDisposable = new CompositeDisposable
     for selectorSource, properties of propertiesBySelector
       for selector in Selector.create(selectorSource)
@@ -108,10 +110,6 @@ class ScopedPropertyStore
         merged[propertySet.selector] = propertySet
     merged
 
-  # Deprecated:
-  removeProperties: (source) ->
-    deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
-    @propertySets = @propertySets.filter (set) -> set.source isnt source
 
   addPropertySet: (propertySet) ->
     @propertySets.push(propertySet)
@@ -122,3 +120,9 @@ class ScopedPropertyStore
   parseScopeChain: (scopeChain) ->
     scopeChain = scopeChain.replace @escapeCharacterRegex, (match) -> "\\#{match[0]}"
     scope for scope in slick.parse(scopeChain)[0] ? []
+
+  # Deprecated:
+  removeProperties: (source) ->
+    deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
+    @bustCache()
+    @propertySets = @propertySets.filter (set) -> set.source isnt source
