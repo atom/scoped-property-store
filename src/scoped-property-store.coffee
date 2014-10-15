@@ -106,6 +106,16 @@ class ScopedPropertyStore
         _.extend(properties, propertySet.properties) if selector.isEqual(setSelector)
     properties
 
+  removePropertiesForSource: (source) ->
+    @bustCache()
+    @propertySets = @propertySets.filter (set) -> set.source isnt source
+
+  removePropertiesForSourceAndSelector: (source, scopeSelector) ->
+    @bustCache()
+    for selector in Selector.create(scopeSelector)
+      @propertySets = @propertySets.filter (set) -> not (set.source is source and set.selector.isEqual(selector))
+    return
+
   mergeMatchingPropertySets: (propertySets) ->
     merged = {}
     for propertySet in propertySets
@@ -144,5 +154,4 @@ class ScopedPropertyStore
   # Deprecated:
   removeProperties: (source) ->
     deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
-    @bustCache()
-    @propertySets = @propertySets.filter (set) -> set.source isnt source
+    @removePropertiesForSource(source)

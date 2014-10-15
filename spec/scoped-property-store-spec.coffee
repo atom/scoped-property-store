@@ -107,13 +107,26 @@ describe "ScopedPropertyStore", ->
         expect(store.getProperties('.a .b .c.d')).toEqual [{x: 1, y: 2}, {q: 4}, {x: 2}, {x: undefined}, {x: 3}]
 
   describe "removing properties", ->
-    describe "when the deprecated ::removeProperties(name) is used", ->
+    describe "when ::removePropertiesForSource(source, selector) is used", ->
       it "removes properties previously added with ::addProperties", ->
         store.addProperties('test1', '.a.b': 'x': 1)
         store.addProperties('test2', '.a': 'x': 2)
 
         expect(store.getPropertyValue('.a.b', 'x')).toBe 1
-        store.removeProperties('test1')
+        store.removePropertiesForSource('test1')
+        expect(store.getPropertyValue('.a.b', 'x')).toBe 2
+
+    describe "when ::removePropertiesForSourceAndSelector(source, selector) is used", ->
+      it "removes properties previously added with ::addProperties", ->
+        store.addProperties('default', '.a.b': 'x': 1)
+        store.addProperties('default', '.a.b': 'x': 2)
+        store.addProperties('override', '.a': 'x': 3)
+        store.addProperties('override', '.a.b': 'x': 4)
+
+        expect(store.getPropertyValue('.a', 'x')).toBe 3
+        expect(store.getPropertyValue('.a.b', 'x')).toBe 4
+        store.removePropertiesForSourceAndSelector('override', '.b.a')
+        expect(store.getPropertyValue('.a', 'x')).toBe 3
         expect(store.getPropertyValue('.a.b', 'x')).toBe 2
 
     describe "when Disposable::dispose() is used", ->
