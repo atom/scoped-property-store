@@ -87,6 +87,15 @@ describe "ScopedPropertyStore", ->
       expect(store.getPropertyValue('.c]', 'a')).toBe 28
       expect(store.getPropertyValue('()', 'a')).toBeUndefined()
 
+    describe 'when the excludeSources options is used', ->
+      it "returns properties set on sources excluding the source secified", ->
+        store.addProperties 'test1', '.a.b': {x: y: 1}
+        store.addProperties 'test2', '.a.b': {x: y: 2}
+        store.addProperties 'test3', '.a.b': {x: y: 3}
+
+        expect(store.getPropertyValue('.a.b', 'x.y')).toBe 3
+        expect(store.getPropertyValue('.a.b', 'x.y', excludeSources: ['test3'])).toBe 2
+
   describe "::getProperties(scopeChain, keyPath)", ->
     beforeEach ->
       store.addProperties 'test',

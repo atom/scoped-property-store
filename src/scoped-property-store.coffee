@@ -33,19 +33,21 @@ class ScopedPropertyStore
 
   # Public: Get the value of a previously stored key-path in a given scope.
   #
-  # scopeChain - This describes a location in the document. It uses the same
+  # * `scopeChain` This describes a location in the document. It uses the same
   #   syntax as selectors, with each space-separated component representing one
   #   element.
-  # keyPath - A `.` separated string of keys to traverse in the properties.
+  # * `keyPath` A `.` separated string of keys to traverse in the properties.
+  # * `options`
   #
   # Returns the property value or `undefined` if none is found.
-  getPropertyValue: (originalScopeChain, keyPath) ->
-    return @getCachedValue(originalScopeChain, keyPath) if @hasCachedValue(originalScopeChain, keyPath)
+  getPropertyValue: (originalScopeChain, keyPath, options) ->
+    return @getCachedValue(originalScopeChain, keyPath) if not options? and @hasCachedValue(originalScopeChain, keyPath)
 
+    excludeSources = options?.excludeSources
     scopeChain = @parseScopeChain(originalScopeChain)
     while scopeChain.length > 0
       for set in @propertySets
-        if set.matches(scopeChain) and set.has(keyPath)
+        if set.matches(scopeChain) and set.has(keyPath) and not (excludeSources?.indexOf(set.source) >= 0)
           return @setCachedValue(scopeChain, keyPath, set.get(keyPath))
       scopeChain.pop()
 
