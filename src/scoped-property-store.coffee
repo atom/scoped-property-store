@@ -108,6 +108,15 @@ class ScopedPropertyStore
         _.extend(properties, propertySet.properties) if selector.isEqual(setSelector)
     properties
 
+  propertiesForSelector: (scopeSelector) ->
+    propertySets = @mergeMatchingPropertySets(@propertySets)
+
+    properties = {}
+    for selector in Selector.create(scopeSelector)
+      for setSelector, propertySet of propertySets
+        _.extend(properties, propertySet.properties) if selector.isEqual(setSelector)
+    properties
+
   removePropertiesForSource: (source) ->
     @bustCache()
     @propertySets = @propertySets.filter (set) -> set.source isnt source
