@@ -1,4 +1,5 @@
 slick = require 'atom-slick'
+_ = require 'underscore-plus'
 {deprecate} = require 'grim'
 {Disposable, CompositeDisposable} = require 'event-kit'
 Selector = require './selector'
@@ -95,6 +96,15 @@ class ScopedPropertyStore
     for selector, propertySet of propertySets
       propertiesBySelector[selector] = propertySet.properties
     propertiesBySelector
+
+  propertiesForSourceAndSelector: (source, scopeSelector) ->
+    propertySets = @mergeMatchingPropertySets(@propertySets.filter (set) -> set.source is source)
+
+    properties = {}
+    for selector in Selector.create(scopeSelector)
+      for setSelector, propertySet of propertySets
+        _.extend(properties, propertySet.properties) if selector.isEqual(setSelector)
+    properties
 
   mergeMatchingPropertySets: (propertySets) ->
     merged = {}

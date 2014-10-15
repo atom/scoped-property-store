@@ -69,6 +69,9 @@ class Selector
     else
       other.specificity - @specificity
 
+  isEqual: (other) ->
+    @toString() is other.toString()
+
   calculateSpecificity: ->
     a = 0
     b = 0

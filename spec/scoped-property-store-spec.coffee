@@ -175,3 +175,20 @@ describe "ScopedPropertyStore", ->
           x: 2
         '.a.b.c':
           x: 2
+
+  describe "::propertiesForSourceAndSelector(source, selector)", ->
+    it 'returns all the properties for a given source', ->
+      store.addProperties('a', '.a.b': 'x': 1)
+      store.addProperties('b', '.a': 'x': 2)
+      store.addProperties('b', '.a.b': 'y': 1)
+
+      properties = store.propertiesForSourceAndSelector('b', '.b.a')
+      expect(properties).toEqual y: 1
+
+    it 'can compose properties added at different times for matching keys', ->
+      store.addProperties('b', '.a': 'x': 2)
+      store.addProperties('b', '.o.k': 'y': 1)
+      store.addProperties('b', '.o.k': 'z': 3, 'y': 5)
+      store.addProperties('b', '.a.b': 'y': 10)
+
+      expect(store.propertiesForSourceAndSelector('b', '.o.k')).toEqual y: 5, z: 3
