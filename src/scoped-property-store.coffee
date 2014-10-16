@@ -1,4 +1,5 @@
 slick = require 'atom-slick'
+_ = require 'underscore-plus'
 {deprecate} = require 'grim'
 {Disposable, CompositeDisposable} = require 'event-kit'
 Selector = require './selector'
@@ -32,19 +33,21 @@ class ScopedPropertyStore
 
   # Public: Get the value of a previously stored key-path in a given scope.
   #
-  # scopeChain - This describes a location in the document. It uses the same
+  # * `scopeChain` This describes a location in the document. It uses the same
   #   syntax as selectors, with each space-separated component representing one
   #   element.
-  # keyPath - A `.` separated string of keys to traverse in the properties.
+  # * `keyPath` A `.` separated string of keys to traverse in the properties.
+  # * `options`
   #
   # Returns the property value or `undefined` if none is found.
-  getPropertyValue: (originalScopeChain, keyPath) ->
-    return @getCachedValue(originalScopeChain, keyPath) if @hasCachedValue(originalScopeChain, keyPath)
+  getPropertyValue: (originalScopeChain, keyPath, options) ->
+    return @getCachedValue(originalScopeChain, keyPath) if not options? and @hasCachedValue(originalScopeChain, keyPath)
 
+    excludeSources = options?.excludeSources
     scopeChain = @parseScopeChain(originalScopeChain)
     while scopeChain.length > 0
       for set in @propertySets
-        if set.matches(scopeChain) and set.has(keyPath)
+        if set.matches(scopeChain) and set.has(keyPath) and not (excludeSources?.indexOf(set.source) >= 0)
           return @setCachedValue(scopeChain, keyPath, set.get(keyPath))
       scopeChain.pop()
 
@@ -96,6 +99,52 @@ class ScopedPropertyStore
       propertiesBySelector[selector] = propertySet.properties
     propertiesBySelector
 
+  # Public: Get *all* properties matching the given source and scopeSelector.
+  #
+  # * `source` {String}
+  # * `scopeSelector` {String} `scopeSelector` is matched exactly.
+  #
+  # Returns an {Object} in the format {property: value}
+  propertiesForSourceAndSelector: (source, scopeSelector) ->
+    propertySets = @mergeMatchingPropertySets(@propertySets.filter (set) -> set.source is source)
+
+    properties = {}
+    for selector in Selector.create(scopeSelector)
+      for setSelector, propertySet of propertySets
+        _.extend(properties, propertySet.properties) if selector.isEqual(setSelector)
+    properties
+
+  # Public: Get *all* properties matching the given scopeSelector.
+  #
+  # * `scopeSelector` {String} `scopeSelector` is matched exactly.
+  #
+  # Returns an {Object} in the format {property: value}
+  propertiesForSelector: (scopeSelector) ->
+    propertySets = @mergeMatchingPropertySets(@propertySets)
+
+    properties = {}
+    for selector in Selector.create(scopeSelector)
+      for setSelector, propertySet of propertySets
+        _.extend(properties, propertySet.properties) if selector.isEqual(setSelector)
+    properties
+
+  # Public: Remove all properties for a given source.
+  #
+  # * `source` {String}
+  removePropertiesForSource: (source) ->
+    @bustCache()
+    @propertySets = @propertySets.filter (set) -> set.source isnt source
+
+  # Public: Remove all properties for a given source.
+  #
+  # * `source` {String}
+  # * `scopeSelector` {String} `scopeSelector` is matched exactly.
+  removePropertiesForSourceAndSelector: (source, scopeSelector) ->
+    @bustCache()
+    for selector in Selector.create(scopeSelector)
+      @propertySets = @propertySets.filter (set) -> not (set.source is source and set.selector.isEqual(selector))
+    return
+
   mergeMatchingPropertySets: (propertySets) ->
     merged = {}
     for propertySet in propertySets
@@ -134,5 +183,4 @@ class ScopedPropertyStore
   # Deprecated:
   removeProperties: (source) ->
     deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
-    @bustCache()
-    @propertySets = @propertySets.filter (set) -> set.source isnt source
+    @removePropertiesForSource(source)

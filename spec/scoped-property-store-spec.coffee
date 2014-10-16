@@ -87,6 +87,15 @@ describe "ScopedPropertyStore", ->
       expect(store.getPropertyValue('.c]', 'a')).toBe 28
       expect(store.getPropertyValue('()', 'a')).toBeUndefined()
 
+    describe 'when the excludeSources options is used', ->
+      it "returns properties set on sources excluding the source secified", ->
+        store.addProperties 'test1', '.a.b': {x: y: 1}
+        store.addProperties 'test2', '.a.b': {x: y: 2}
+        store.addProperties 'test3', '.a.b': {x: y: 3}
+
+        expect(store.getPropertyValue('.a.b', 'x.y')).toBe 3
+        expect(store.getPropertyValue('.a.b', 'x.y', excludeSources: ['test3'])).toBe 2
+
   describe "::getProperties(scopeChain, keyPath)", ->
     beforeEach ->
       store.addProperties 'test',
@@ -107,13 +116,26 @@ describe "ScopedPropertyStore", ->
         expect(store.getProperties('.a .b .c.d')).toEqual [{x: 1, y: 2}, {q: 4}, {x: 2}, {x: undefined}, {x: 3}]
 
   describe "removing properties", ->
-    describe "when the deprecated ::removeProperties(name) is used", ->
+    describe "when ::removePropertiesForSource(source, selector) is used", ->
       it "removes properties previously added with ::addProperties", ->
         store.addProperties('test1', '.a.b': 'x': 1)
         store.addProperties('test2', '.a': 'x': 2)
 
         expect(store.getPropertyValue('.a.b', 'x')).toBe 1
-        store.removeProperties('test1')
+        store.removePropertiesForSource('test1')
+        expect(store.getPropertyValue('.a.b', 'x')).toBe 2
+
+    describe "when ::removePropertiesForSourceAndSelector(source, selector) is used", ->
+      it "removes properties previously added with ::addProperties", ->
+        store.addProperties('default', '.a.b': 'x': 1)
+        store.addProperties('default', '.a.b': 'x': 2)
+        store.addProperties('override', '.a': 'x': 3)
+        store.addProperties('override', '.a.b': 'x': 4)
+
+        expect(store.getPropertyValue('.a', 'x')).toBe 3
+        expect(store.getPropertyValue('.a.b', 'x')).toBe 4
+        store.removePropertiesForSourceAndSelector('override', '.b.a')
+        expect(store.getPropertyValue('.a', 'x')).toBe 3
         expect(store.getPropertyValue('.a.b', 'x')).toBe 2
 
     describe "when Disposable::dispose() is used", ->
@@ -175,3 +197,37 @@ describe "ScopedPropertyStore", ->
           x: 2
         '.a.b.c':
           x: 2
+
+  describe "::propertiesForSourceAndSelector(source, selector)", ->
+    it 'returns all the properties for a given source', ->
+      store.addProperties('a', '.a.b': 'x': 1)
+      store.addProperties('b', '.a': 'x': 2)
+      store.addProperties('b', '.a.b': 'y': 1)
+
+      properties = store.propertiesForSourceAndSelector('b', '.b.a')
+      expect(properties).toEqual y: 1
+
+    it 'can compose properties added at different times for matching keys', ->
+      store.addProperties('b', '.a': 'x': 2)
+      store.addProperties('b', '.o.k': 'y': 1)
+      store.addProperties('b', '.o.k': 'z': 3, 'y': 5)
+      store.addProperties('b', '.a.b': 'y': 10)
+
+      expect(store.propertiesForSourceAndSelector('b', '.o.k')).toEqual y: 5, z: 3
+
+  describe "::propertiesForSourceAndSelector(source, selector)", ->
+    it 'returns all the properties for a given source', ->
+      store.addProperties('a', '.a.b': 'x': 1)
+      store.addProperties('b', '.a': 'x': 2)
+      store.addProperties('b', '.a.b': 'y': 1)
+
+      properties = store.propertiesForSelector('.b.a')
+      expect(properties).toEqual x: 1, y: 1
+
+    it 'can compose properties added at different times for matching keys', ->
+      store.addProperties('b', '.a': 'x': 2)
+      store.addProperties('b', '.o.k': 'y': 1)
+      store.addProperties('a', '.o.k': 'z': 3, 'y': 5)
+      store.addProperties('b', '.a.b': 'y': 10)
+
+      expect(store.propertiesForSelector('.o.k')).toEqual y: 5, z: 3
