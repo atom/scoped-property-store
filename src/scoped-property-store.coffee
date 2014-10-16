@@ -99,6 +99,12 @@ class ScopedPropertyStore
       propertiesBySelector[selector] = propertySet.properties
     propertiesBySelector
 
+  # Public: Get *all* properties matching the given source and scopeSelector.
+  #
+  # * `source` {String}
+  # * `scopeSelector` {String} `scopeSelector` is matched exactly.
+  #
+  # Returns an {Object} in the format {property: value}
   propertiesForSourceAndSelector: (source, scopeSelector) ->
     propertySets = @mergeMatchingPropertySets(@propertySets.filter (set) -> set.source is source)
 
@@ -108,6 +114,11 @@ class ScopedPropertyStore
         _.extend(properties, propertySet.properties) if selector.isEqual(setSelector)
     properties
 
+  # Public: Get *all* properties matching the given scopeSelector.
+  #
+  # * `scopeSelector` {String} `scopeSelector` is matched exactly.
+  #
+  # Returns an {Object} in the format {property: value}
   propertiesForSelector: (scopeSelector) ->
     propertySets = @mergeMatchingPropertySets(@propertySets)
 
@@ -117,10 +128,17 @@ class ScopedPropertyStore
         _.extend(properties, propertySet.properties) if selector.isEqual(setSelector)
     properties
 
+  # Public: Remove all properties for a given source.
+  #
+  # * `source` {String}
   removePropertiesForSource: (source) ->
     @bustCache()
     @propertySets = @propertySets.filter (set) -> set.source isnt source
 
+  # Public: Remove all properties for a given source.
+  #
+  # * `source` {String}
+  # * `scopeSelector` {String} `scopeSelector` is matched exactly.
   removePropertiesForSourceAndSelector: (source, scopeSelector) ->
     @bustCache()
     for selector in Selector.create(scopeSelector)
