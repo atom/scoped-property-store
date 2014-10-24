@@ -19,9 +19,9 @@ class Selector
         console.warn "Unsupported pseudo-selector: #{pseudoClass.name}"
 
   constructor: (@selector, options) ->
-    indexBase = options?.indexBase ? 0
+    priority = options?.priority ? 0
     @specificity = @calculateSpecificity()
-    @index = indexBase + indexCounter++
+    @index = priority + indexCounter++
 
   matches: (scopeChain) ->
     if typeof scopeChain is 'string'
