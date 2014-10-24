@@ -87,6 +87,14 @@ describe "ScopedPropertyStore", ->
       expect(store.getPropertyValue('.c]', 'a')).toBe 28
       expect(store.getPropertyValue('()', 'a')).toBeUndefined()
 
+    describe 'when priority option is used to add properties', ->
+      it "returns the property with the highest priority", ->
+        store.addProperties 'test1', '.a.b': {x: y: 1}, {priority: 100}
+        store.addProperties 'test2', '.a.b': {x: y: 2}
+        store.addProperties 'test3', '.a.b': {x: y: 3}
+
+        expect(store.getPropertyValue('.a.b', 'x.y')).toBe 1
+
     describe 'when the excludeSources options is used', ->
       it "returns properties set on sources excluding the source secified", ->
         store.addProperties 'test1', '.a.b': {x: y: 1}

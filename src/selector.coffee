@@ -4,10 +4,10 @@ indexCounter = 0
 
 module.exports =
 class Selector
-  @create: (source) ->
+  @create: (source, options) ->
     for selectorAst in slick.parse(source)
       @parsePseudoSelectors(selectorComponent) for selectorComponent in selectorAst
-      new this(selectorAst)
+      new this(selectorAst, options)
 
   @parsePseudoSelectors: (selectorComponent) ->
     return unless selectorComponent.pseudos?
@@ -18,9 +18,10 @@ class Selector
       else
         console.warn "Unsupported pseudo-selector: #{pseudoClass.name}"
 
-  constructor: (@selector) ->
+  constructor: (@selector, options) ->
+    priority = options?.priority ? 0
     @specificity = @calculateSpecificity()
-    @index = indexCounter++
+    @index = priority + indexCounter++
 
   matches: (scopeChain) ->
     if typeof scopeChain is 'string'

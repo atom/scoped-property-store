@@ -22,11 +22,11 @@ class ScopedPropertyStore
   #
   # Returns a {Disposable} on which you can call `.dispose()` to remove the
   # added properties
-  addProperties: (source, propertiesBySelector) ->
+  addProperties: (source, propertiesBySelector, options) ->
     @bustCache()
     compositeDisposable = new CompositeDisposable
     for selectorSource, properties of propertiesBySelector
-      for selector in Selector.create(selectorSource)
+      for selector in Selector.create(selectorSource, options)
         compositeDisposable.add @addPropertySet(new PropertySet(source, selector, properties))
     @propertySets.sort (a, b) -> a.compare(b)
     compositeDisposable
