@@ -22,9 +22,10 @@
   ],
   "dependencies": {
     "atom-slick": "^2",
-    "underscore-plus": "^1.1.1",
     "event-kit": "^0.7",
-    "grim": "^0.12"
+    "grim": "^0.12",
+    "key-path-helpers": "^0.1.0",
+    "underscore-plus": "^1.1.1"
   },
   "devDependencies": {
     "coffee-script": "^1.7.0",

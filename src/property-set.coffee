@@ -1,4 +1,5 @@
-{deepExtend, hasKeyPath, valueForKeyPath} = require 'underscore-plus'
+{deepExtend} = require 'underscore-plus'
+{hasKeyPath, getValueAtKeyPath} = require 'key-path-helpers'
 
 module.exports =
 class PropertySet
@@ -18,4 +19,4 @@ class PropertySet
     hasKeyPath(@properties, keyPath)
 
   get: (keyPath) ->
-    valueForKeyPath(@properties, keyPath)
+    getValueAtKeyPath(@properties, keyPath)
