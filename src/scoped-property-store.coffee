@@ -53,7 +53,9 @@ class ScopedPropertyStore
         continue if sources? and not (set.source in sources)
 
         if set.matches(scopeChain) and set.has(keyPath)
-          return @setCachedValue(scopeChain, keyPath, set.get(keyPath))
+          value = set.get(keyPath)
+          @setCachedValue(originalScopeChain, keyPath, value) unless options?
+          return value
       scopeChain.pop()
 
     # We need to cache that we do not have the value, otherwise when the store

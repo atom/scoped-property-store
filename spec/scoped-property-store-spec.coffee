@@ -101,8 +101,8 @@ describe "ScopedPropertyStore", ->
         store.addProperties 'test2', '.a.b': {x: y: 2}
         store.addProperties 'test3', '.a.b': {x: y: 3}
 
-        expect(store.getPropertyValue('.a.b', 'x.y')).toBe 3
         expect(store.getPropertyValue('.a.b', 'x.y', sources: ['test1'])).toBe 1
+        expect(store.getPropertyValue('.a.b', 'x.y')).toBe 3 # shouldn't cache the previous call
 
     describe "when the 'excludeSources' options is used", ->
       it "returns properties set on sources excluding the source secified", ->
@@ -110,8 +110,8 @@ describe "ScopedPropertyStore", ->
         store.addProperties 'test2', '.a.b': {x: y: 2}
         store.addProperties 'test3', '.a.b': {x: y: 3}
 
-        expect(store.getPropertyValue('.a.b', 'x.y')).toBe 3
         expect(store.getPropertyValue('.a.b', 'x.y', excludeSources: ['test3'])).toBe 2
+        expect(store.getPropertyValue('.a.b', 'x.y')).toBe 3 # shouldn't cache the previous call
 
   describe "::getProperties(scopeChain, keyPath)", ->
     beforeEach ->
