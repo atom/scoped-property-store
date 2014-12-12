@@ -155,10 +155,11 @@ class ScopedPropertyStore
   mergeMatchingPropertySets: (propertySets) ->
     merged = {}
     for propertySet in propertySets
-      if matchingPropertySet = merged[propertySet.selector]
-        merged[propertySet.selector] = matchingPropertySet.merge(propertySet)
+      selector = propertySet.selector.toString() or '*'
+      if matchingPropertySet = merged[selector]
+        merged[selector] = matchingPropertySet.merge(propertySet)
       else
-        merged[propertySet.selector] = propertySet
+        merged[selector] = propertySet
     merged
 
   hasCachedValue: (scopeChain, keyPath) ->
