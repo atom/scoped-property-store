@@ -43,11 +43,16 @@ class ScopedPropertyStore
   getPropertyValue: (originalScopeChain, keyPath, options) ->
     return @getCachedValue(originalScopeChain, keyPath) if not options? and @hasCachedValue(originalScopeChain, keyPath)
 
+    sources = options?.sources
     excludeSources = options?.excludeSources
+
     scopeChain = @parseScopeChain(originalScopeChain)
     while scopeChain.length > 0
       for set in @propertySets
-        if set.matches(scopeChain) and set.has(keyPath) and not (excludeSources?.indexOf(set.source) >= 0)
+        continue if excludeSources? and (set.source in excludeSources)
+        continue if sources? and not (set.source in sources)
+
+        if set.matches(scopeChain) and set.has(keyPath)
           return @setCachedValue(scopeChain, keyPath, set.get(keyPath))
       scopeChain.pop()
 
