@@ -19,6 +19,18 @@ describe "ScopedPropertyStore", ->
       expect(store.getPropertyValue('.a', 'x.y')).toBe 3
       expect(store.getPropertyValue('.y', 'x.y')).toBeUndefined()
 
+    it "deep-merges all values for the given key path", ->
+      store.addProperties('test', '.a': {t: u: v: 1})
+      store.addProperties('test', '.a .b': {t: u: w: 2})
+      store.addProperties('test', '.a .b .c': {t: x: 3})
+      expect(store.getPropertyValue('.a .b .c', 't')).toEqual {u: {v: 1, w: 2}, x: 3}
+
+      store.addProperties('test', '.a .b .c': {t: u: false})
+      expect(store.getPropertyValue('.a .b .c', 't')).toEqual {u: false, x: 3}
+
+      store.addProperties('test', '.a .b .c': {t: null})
+      expect(store.getPropertyValue('.a .b .c', 't')).toEqual null
+
     it "favors the most recently added properties in the event of a specificity tie", ->
       store.addProperties('test', '.a.b .c': 'x': 1)
       store.addProperties('test', '.a .c.d': 'x': 2)

@@ -1,5 +1,6 @@
 slick = require 'atom-slick'
 _ = require 'underscore-plus'
+{getValueAtKeyPath} = require 'key-path-helpers'
 {deprecate} = require 'grim'
 {Disposable, CompositeDisposable} = require 'event-kit'
 Selector = require './selector'
@@ -47,20 +48,20 @@ class ScopedPropertyStore
     excludeSources = options?.excludeSources
 
     scopeChain = @parseScopeChain(originalScopeChain)
+    properties = {}
+
     while scopeChain.length > 0
       for set in @propertySets
         continue if excludeSources? and (set.source in excludeSources)
         continue if sources? and not (set.source in sources)
 
-        if set.matches(scopeChain) and set.has(keyPath)
-          value = set.get(keyPath)
-          @setCachedValue(originalScopeChain, keyPath, value) unless options?
-          return value
+        if set.matches(scopeChain)
+          properties = _.deepExtend(set.properties, properties)
       scopeChain.pop()
 
-    # We need to cache that we do not have the value, otherwise when the store
-    # does not have the value, we'll always miss the cache.
-    @setCachedValue(originalScopeChain, keyPath, undefined)
+    value = getValueAtKeyPath(properties, keyPath)
+    @setCachedValue(originalScopeChain, keyPath, value) unless options?
+    value
 
   # Public: Get *all* property objects matching the given scope chain that
   # contain a value for given key path.
