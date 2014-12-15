@@ -1,6 +1,6 @@
 {
   "name": "scoped-property-store",
-  "version": "0.15.1",
+  "version": "0.15.2",
   "description": "Store and retrieve properties associated with CSS selectors.",
   "main": "./lib/scoped-property-store",
   "scripts": {
