@@ -56,7 +56,7 @@ class ScopedPropertyStore
         continue if sources? and not (set.source in sources)
 
         if set.matches(scopeChain)
-          properties = _.deepExtend(set.properties, properties)
+          properties = _.deepExtend({}, set.properties, properties)
       scopeChain.pop()
 
     value = getValueAtKeyPath(properties, keyPath)

@@ -13,7 +13,7 @@ class PropertySet
     @selector.compare(other.selector)
 
   merge: (other) ->
-    new PropertySet(@source, @selector, deepExtend(other.properties, @properties))
+    new PropertySet(@source, @selector, deepExtend({}, other.properties, @properties))
 
   has: (keyPath) ->
     hasKeyPath(@properties, keyPath)
