@@ -10,7 +10,7 @@ PropertySet = require './property-set'
 module.exports =
 class ScopedPropertyStore
   constructor: ->
-    @cache = null
+    @cache = {}
     @propertySets = []
     @escapeCharacterRegex = /[-!"#$%&'*+,/:;=?@|^~()<>{}[\]]/g
 
@@ -42,26 +42,7 @@ class ScopedPropertyStore
   #
   # Returns the property value or `undefined` if none is found.
   getPropertyValue: (originalScopeChain, keyPath, options) ->
-    return @getCachedValue(originalScopeChain, keyPath) if not options? and @hasCachedValue(originalScopeChain, keyPath)
-
-    sources = options?.sources
-    excludeSources = options?.excludeSources
-
-    scopeChain = @parseScopeChain(originalScopeChain)
-    properties = {}
-
-    while scopeChain.length > 0
-      for set in @propertySets
-        continue if excludeSources? and (set.source in excludeSources)
-        continue if sources? and not (set.source in sources)
-
-        if set.matches(scopeChain)
-          properties = _.deepExtend({}, set.properties, properties)
-      scopeChain.pop()
-
-    value = getValueAtKeyPath(properties, keyPath)
-    @setCachedValue(originalScopeChain, keyPath, value) unless options?
-    value
+    getValueAtKeyPath(@mergePropertiesForScope(originalScopeChain, options), keyPath)
 
   # Public: Get *all* property objects matching the given scope chain that
   # contain a value for given key path.
@@ -153,6 +134,29 @@ class ScopedPropertyStore
       @propertySets = @propertySets.filter (set) -> not (set.source is source and set.selector.isEqual(selector))
     return
 
+  mergePropertiesForScope: (originalScopeChain, options) ->
+    unless options?
+      cachedProperties = @cache[originalScopeChain]
+      return cachedProperties if cachedProperties?
+
+    sources = options?.sources
+    excludeSources = options?.excludeSources
+
+    scopeChain = @parseScopeChain(originalScopeChain)
+    properties = {}
+
+    while scopeChain.length > 0
+      for set in @propertySets
+        continue if excludeSources? and (set.source in excludeSources)
+        continue if sources? and not (set.source in sources)
+
+        if set.matches(scopeChain)
+          properties = _.deepExtend({}, set.properties, properties)
+      scopeChain.pop()
+
+    @cache[originalScopeChain] = properties unless options?
+    properties
+
   mergeMatchingPropertySets: (propertySets) ->
     merged = {}
     for propertySet in propertySets
@@ -163,20 +167,8 @@ class ScopedPropertyStore
         merged[selector] = propertySet
     merged
 
-  hasCachedValue: (scopeChain, keyPath) ->
-    return false unless @cache? and "#{scopeChain}:#{keyPath}" of @cache
-    true
-
-  getCachedValue: (scopeChain, keyPath) ->
-    @cache ?= {}
-    @cache["#{scopeChain}:#{keyPath}"]
-
-  setCachedValue: (scopeChain, keyPath, value) ->
-    @cache ?= {}
-    @cache["#{scopeChain}:#{keyPath}"] = value
-
   bustCache: ->
-    @cache = null
+    @cache = {}
 
   addPropertySet: (propertySet) ->
     @propertySets.push(propertySet)
