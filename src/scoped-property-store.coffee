@@ -5,6 +5,7 @@ _ = require 'underscore-plus'
 {Disposable, CompositeDisposable} = require 'event-kit'
 Selector = require './selector'
 PropertySet = require './property-set'
+{isPlainObject, checkValueAtKeyPath, deepDefaults} = require './helpers'
 
 # Public:
 module.exports =
@@ -42,7 +43,36 @@ class ScopedPropertyStore
   #
   # Returns the property value or `undefined` if none is found.
   getPropertyValue: (originalScopeChain, keyPath, options) ->
-    getValueAtKeyPath(@mergePropertiesForScope(originalScopeChain, options), keyPath)
+    if not options? and @hasCachedValue(originalScopeChain, keyPath)
+      return @getCachedValue(originalScopeChain, keyPath)
+    value = @getMergedValue(originalScopeChain, keyPath, options)
+    @setCachedValue(originalScopeChain, keyPath, value) unless options?
+    value
+
+  getMergedValue: (originalScopeChain, keyPath, options) ->
+    {sources, excludeSources} = options if options?
+    scopeChain = @parseScopeChain(originalScopeChain)
+
+    mergedValue = undefined
+    hasMergedValue = false
+
+    while scopeChain.length > 0
+      for set in @propertySets
+        continue if excludeSources? and (set.source in excludeSources)
+        continue if sources? and not (set.source in sources)
+
+        if set.matches(scopeChain)
+          [value, hasValue] = checkValueAtKeyPath(set.properties, keyPath)
+          if hasValue
+            if hasMergedValue
+              deepDefaults(mergedValue, value)
+            else
+              hasMergedValue = true
+              mergedValue = value
+            return mergedValue unless isPlainObject(mergedValue)
+
+      scopeChain.pop()
+    mergedValue
 
   # Public: Get *all* property objects matching the given scope chain that
   # contain a value for given key path.
@@ -169,6 +199,15 @@ class ScopedPropertyStore
 
   bustCache: ->
     @cache = {}
+
+  hasCachedValue: (scope, keyPath) ->
+    @cache.hasOwnProperty("#{scope}:#{keyPath}")
+
+  getCachedValue: (scope, keyPath) ->
+    @cache["#{scope}:#{keyPath}"]
+
+  setCachedValue: (scope, keyPath, value) ->
+    @cache["#{scope}:#{keyPath}"] = value
 
   addPropertySet: (propertySet) ->
     @propertySets.push(propertySet)

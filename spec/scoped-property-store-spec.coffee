@@ -23,13 +23,19 @@ describe "ScopedPropertyStore", ->
       store.addProperties('test', '.a': {t: u: v: 1})
       store.addProperties('test', '.a .b': {t: u: w: 2})
       store.addProperties('test', '.a .b .c': {t: x: 3})
+      expect(store.getPropertyValue('.a .b .c', 't.u')).toEqual {v: 1, w: 2}
       expect(store.getPropertyValue('.a .b .c', 't')).toEqual {u: {v: 1, w: 2}, x: 3}
+      expect(store.getPropertyValue('.a .b .c', null)).toEqual {t: {u: {v: 1, w: 2}, x: 3}}
 
       store.addProperties('test', '.a .b .c': {t: u: false})
+      expect(store.getPropertyValue('.a .b .c', 't.u')).toBe false
       expect(store.getPropertyValue('.a .b .c', 't')).toEqual {u: false, x: 3}
+      expect(store.getPropertyValue('.a .b .c', null)).toEqual {t: {u: false, x: 3}}
 
       store.addProperties('test', '.a .b .c': {t: null})
+      expect(store.getPropertyValue('.a .b .c', 't.u')).toEqual undefined
       expect(store.getPropertyValue('.a .b .c', 't')).toEqual null
+      expect(store.getPropertyValue('.a .b .c', null)).toEqual {t: null}
 
     it "favors the most recently added properties in the event of a specificity tie", ->
       store.addProperties('test', '.a.b .c': 'x': 1)
