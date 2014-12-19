@@ -36,6 +36,7 @@ deepDefaults =  (target, defaults) ->
         deepDefaults(target[key], defaults[key])
       else
         target[key] = defaults[key]
+  return
 
 module.exports = {
   isPlainObject, checkValueAtKeyPath, deepDefaults
