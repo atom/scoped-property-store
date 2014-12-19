@@ -4,18 +4,54 @@ _ = require 'underscore-plus'
 {deprecate} = require 'grim'
 {Disposable, CompositeDisposable} = require 'event-kit'
 Selector = require './selector'
-PropertySet = require './property-set'
 {isPlainObject, checkValueAtKeyPath, deepDefaults} = require './helpers'
+Layer = require './layer'
 
-# Public:
+# Public: A set of key-value properties, associated with scope selectors.
+# Property values are stored in a set of {Layer}s, analogous to a set of
+# `Cascading Style Sheets`.
 module.exports =
 class ScopedPropertyStore
   constructor: ->
     @cache = {}
     @propertySets = []
+    @layers = []
+    @layerCounter = 0
     @escapeCharacterRegex = /[-!"#$%&'*+,/:;=?@|^~()<>{}[\]]/g
 
-  # Public: Add scoped properties to be queried with {::get}
+  # Public: Get a {Layer} by name
+  #
+  # * `name` {String} The name given when the {Layer} was added with {::addLayer}
+  #
+  # Returns a {Layer} or `undefined` if no such layer exists.
+  getLayer: (name) ->
+    _.find @layers, (layer) -> layer.name is name
+
+  # Public: Get an {Array} of all the {Layer}s in the store.
+  getLayers: ->
+    @layers
+
+  # Public: Add a new layer of properties to the cascade.
+  #
+  # * `name` A {String} name to associate with the layer. This name can
+  #   later be used to retrieve or remove the layer.
+  # * `options`
+  #   * `priority` A {Number} that will be used to determine the layer's
+  #     position in the cascade.
+  #
+  # Returns a {Layer}
+  addLayer: (name, options) ->
+    priority = options?.priority ? 0
+    layer = @getLayer(name)
+    if layer?
+      layer.priority = priority
+    else
+      layer = new Layer(name, options?.priority ? 0, @layerCounter++, this)
+      @layers.push(layer)
+    @layers.sort (a, b) -> a.priority - b.priority
+    layer
+
+  # Deprecated: Add scoped properties to be queried with {::get}
   #
   # source - A string describing these properties to allow them to be removed
   #   later.
@@ -25,13 +61,12 @@ class ScopedPropertyStore
   # Returns a {Disposable} on which you can call `.dispose()` to remove the
   # added properties
   addProperties: (source, propertiesBySelector, options) ->
-    @bustCache()
-    compositeDisposable = new CompositeDisposable
-    for selectorSource, properties of propertiesBySelector
-      for selector in Selector.create(selectorSource, options)
-        compositeDisposable.add @addPropertySet(new PropertySet(source, selector, properties))
-    @propertySets.sort (a, b) -> a.compare(b)
-    compositeDisposable
+    deprecate("Use ::addLayer and Layer::set instead")
+    layer = @addLayer(source, options)
+    layer.set(propertiesBySelector)
+    new Disposable ->
+      deprecate("Use Layer::destroy instead of using this disposable")
+      layer.destroy()
 
   # Public: Get the value of a previously stored key-path in a given scope.
   #
@@ -39,7 +74,11 @@ class ScopedPropertyStore
   #   syntax as selectors, with each space-separated component representing one
   #   element.
   # * `keyPath` A `.` separated string of keys to traverse in the properties.
-  # * `options`
+  # * `options`: (optional) {Object}
+  #   * `includeLayers` (optional) an {Array} of {String} names of {Layer}s to
+  #     use when calculating the value. By default, all {Layer}s are used.
+  #   * `excludeLayers` (optional) an {Array} of {String} names of {Layer}s to
+  #     *exclude* when calculating the value.
   #
   # Returns the property value or `undefined` if none is found.
   getPropertyValue: (originalScopeChain, keyPath, options) ->
@@ -50,7 +89,7 @@ class ScopedPropertyStore
     value
 
   getMergedValue: (originalScopeChain, keyPath, options) ->
-    {sources, excludeSources} = options if options?
+    {includeLayers, excludeLayers} = options if options?
     scopeChain = @parseScopeChain(originalScopeChain)
 
     mergedValue = undefined
@@ -58,10 +97,10 @@ class ScopedPropertyStore
 
     while scopeChain.length > 0
       for set in @propertySets
-        continue if excludeSources? and (set.source in excludeSources)
-        continue if sources? and not (set.source in sources)
+        continue if excludeLayers? and (set.layer.name in excludeLayers)
+        continue if includeLayers? and not (set.layer.name in includeLayers)
 
-        if set.matches(scopeChain)
+        if set.selector.matches(scopeChain)
           [value, hasValue] = checkValueAtKeyPath(set.properties, keyPath)
           if hasValue
             if hasMergedValue
@@ -74,7 +113,7 @@ class ScopedPropertyStore
       scopeChain.pop()
     mergedValue
 
-  # Public: Get *all* property objects matching the given scope chain that
+  # Deprecated: Get *all* property objects matching the given scope chain that
   # contain a value for given key path.
   #
   # scopeChain - This describes a location in the document. It uses the same
@@ -86,16 +125,8 @@ class ScopedPropertyStore
   # Returns an {Array} of property {Object}s. These are the same objects that
   # are nested beneath the selectors in {::addProperties}.
   getProperties: (scopeChain, keyPath) ->
-    values = []
-
-    scopeChain = @parseScopeChain(scopeChain)
-    while scopeChain.length > 0
-      for set in @propertySets
-        if set.matches(scopeChain) and (not keyPath? or set.has(keyPath))
-          values.push(set.properties)
-      scopeChain.pop()
-
-    values
+    deprecate("Call ::getPropertyValue with multiple scope chains instead")
+    [@getPropertyValue(scopeChain, null)]
 
   # Public: Get *all* properties for a given source.
   #
@@ -111,12 +142,7 @@ class ScopedPropertyStore
   #
   # Returns an {Object} in the format {scope: {property: value}}
   propertiesForSource: (source) ->
-    propertySets = @mergeMatchingPropertySets(@propertySets.filter (set) -> set.source is source)
-
-    propertiesBySelector = {}
-    for selector, propertySet of propertySets
-      propertiesBySelector[selector] = propertySet.properties
-    propertiesBySelector
+    @getLayer(source).getPropertiesBySelector()
 
   # Public: Get *all* properties matching the given source and scopeSelector.
   #
@@ -125,13 +151,8 @@ class ScopedPropertyStore
   #
   # Returns an {Object} in the format {property: value}
   propertiesForSourceAndSelector: (source, scopeSelector) ->
-    propertySets = @mergeMatchingPropertySets(@propertySets.filter (set) -> set.source is source)
-
-    properties = {}
-    for selector in Selector.create(scopeSelector)
-      for setSelector, propertySet of propertySets
-        _.extend(properties, propertySet.properties) if selector.isEqual(setSelector)
-    properties
+    normalizedSelector = Selector.create(scopeSelector)[0].toString()
+    @propertiesForSource(source)[normalizedSelector]
 
   # Public: Get *all* properties matching the given scopeSelector.
   #
@@ -139,63 +160,47 @@ class ScopedPropertyStore
   #
   # Returns an {Object} in the format {property: value}
   propertiesForSelector: (scopeSelector) ->
-    propertySets = @mergeMatchingPropertySets(@propertySets)
+    normalizedSelector = Selector.create(scopeSelector)[0].toString()
+    result = {}
+    for propertySet in @propertySets
+      if propertySet.selector.toString() is normalizedSelector
+        deepDefaults(result, propertySet.properties)
+    result
 
-    properties = {}
-    for selector in Selector.create(scopeSelector)
-      for setSelector, propertySet of propertySets
-        _.extend(properties, propertySet.properties) if selector.isEqual(setSelector)
-    properties
-
-  # Public: Remove all properties for a given source.
+  # Deprecated: Remove all properties for a given source.
   #
   # * `source` {String}
-  removePropertiesForSource: (source) ->
-    @bustCache()
-    @propertySets = @propertySets.filter (set) -> set.source isnt source
+  removePropertiesForSource: (name) ->
+    deprecate("Use ::getLayer(name).destroy() instead")
+    @getLayer(name).destroy()
 
-  # Public: Remove all properties for a given source.
+  # Deprecated: Remove all properties for a given source.
   #
   # * `source` {String}
   # * `scopeSelector` {String} `scopeSelector` is matched exactly.
-  removePropertiesForSourceAndSelector: (source, scopeSelector) ->
+  removePropertiesForSourceAndSelector: (name, scopeSelector) ->
+    deprecate("Use ::getLayer(name).unset(scopeSelector) instead")
+    @getLayer(name).unset(scopeSelector)
+
+  # Private - {Layer} owner hooks
+
+  layerDidDestroy: (layer) ->
+    index = @layers.indexOf(layer)
+    @layers.splice(index, 1) if index >= 0
+    @layerDidUpdate()
+
+  layerDidUpdate: ->
+    @propertySets = []
+    for layer in @layers
+      for propertySet in layer.propertySets
+        @propertySets.push(propertySet)
+    @propertySets.sort (a, b) ->
+      (b.selector.specificity - a.selector.specificity) or
+      (b.layer.priority - a.layer.priority) or
+      (b.layer.counter - a.layer.counter)
     @bustCache()
-    for selector in Selector.create(scopeSelector)
-      @propertySets = @propertySets.filter (set) -> not (set.source is source and set.selector.isEqual(selector))
-    return
 
-  mergePropertiesForScope: (originalScopeChain, options) ->
-    unless options?
-      cachedProperties = @cache[originalScopeChain]
-      return cachedProperties if cachedProperties?
-
-    sources = options?.sources
-    excludeSources = options?.excludeSources
-
-    scopeChain = @parseScopeChain(originalScopeChain)
-    properties = {}
-
-    while scopeChain.length > 0
-      for set in @propertySets
-        continue if excludeSources? and (set.source in excludeSources)
-        continue if sources? and not (set.source in sources)
-
-        if set.matches(scopeChain)
-          properties = _.deepExtend({}, set.properties, properties)
-      scopeChain.pop()
-
-    @cache[originalScopeChain] = properties unless options?
-    properties
-
-  mergeMatchingPropertySets: (propertySets) ->
-    merged = {}
-    for propertySet in propertySets
-      selector = propertySet.selector.toString() or '*'
-      if matchingPropertySet = merged[selector]
-        merged[selector] = matchingPropertySet.merge(propertySet)
-      else
-        merged[selector] = propertySet
-    merged
+  # Private - internal
 
   bustCache: ->
     @cache = {}
@@ -209,18 +214,6 @@ class ScopedPropertyStore
   setCachedValue: (scope, keyPath, value) ->
     @cache["#{scope}:#{keyPath}"] = value
 
-  addPropertySet: (propertySet) ->
-    @propertySets.push(propertySet)
-    new Disposable =>
-      index = @propertySets.indexOf(propertySet)
-      @propertySets.splice(index, 1) if index > -1
-      @bustCache()
-
   parseScopeChain: (scopeChain) ->
     scopeChain = scopeChain.replace @escapeCharacterRegex, (match) -> "\\#{match[0]}"
     scope for scope in slick.parse(scopeChain)[0] ? []
-
-  # Deprecated:
-  removeProperties: (source) ->
-    deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
-    @removePropertiesForSource(source)
