@@ -9,14 +9,25 @@ describe "ScopedPropertyStore", ->
   describe "::getPropertyValue(scopeChain, keyPath)", ->
     it "returns the property with the most specific scope selector for the given scope chain", ->
       store.addProperties 'test',
-        '.a .c.d.e': {x: y: 1}
-        '.a .c': {x: y: 2}
-        '.a': {x: y: 3}
+        '.c': {x: y: 3}
+        '.b .c': {x: y: 2}
+        '.a .b .c': {x: y: 1}
+        '.a .b .c.d': {x: y: 0}
 
-      expect(store.getPropertyValue('.a .c.d.e.f', 'x.y')).toBe 1
-      expect(store.getPropertyValue('.a .c', 'x.y')).toBe 2
-      expect(store.getPropertyValue('.a .g', 'x.y')).toBe 3
-      expect(store.getPropertyValue('.a', 'x.y')).toBe 3
+      expect(store.getPropertyValue('.a .b .c.d', 'x.y')).toBe 0
+      expect(store.getPropertyValue('.a .b .c', 'x.y')).toBe 1
+      expect(store.getPropertyValue('.other .b .c', 'x.y')).toBe 2
+      expect(store.getPropertyValue('.other .stuff .c', 'x.y')).toBe 3
+
+    it "returns properties that match parent scopes if none match the exact scope", ->
+      store.addProperties 'test',
+        '.a .b.c': {x: y: 3}
+        '.d.e': {x: y: 2}
+        '.f': {x: y: 1}
+
+      expect(store.getPropertyValue('.a .b.c .d.e .f', 'x.y')).toBe 1
+      expect(store.getPropertyValue('.a .b.c .d.e .g', 'x.y')).toBe 2
+      expect(store.getPropertyValue('.a .b.c .d.x .g', 'x.y')).toBe 3
       expect(store.getPropertyValue('.y', 'x.y')).toBeUndefined()
 
     it "deep-merges all values for the given key path", ->
