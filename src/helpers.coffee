@@ -25,7 +25,7 @@ checkValueAtKeyPath = (object, keyPath) ->
         return [undefined, false]
     else
       return [undefined, true]
-  return [object, true]
+  [object, true]
 
 # Public: Fill in missing values in `target` with those from `defaults`,
 # recursing into any nested {Objects}

@@ -46,8 +46,7 @@ class ScopedPropertyStore
     if not options? and @hasCachedValue(originalScopeChain, keyPath)
       return @getCachedValue(originalScopeChain, keyPath)
     value = @getMergedValue(originalScopeChain, keyPath, options)
-    unless options?
-      @setCachedValue(originalScopeChain, keyPath, value)
+    @setCachedValue(originalScopeChain, keyPath, value) unless options?
     value
 
   getMergedValue: (originalScopeChain, keyPath, options) ->
