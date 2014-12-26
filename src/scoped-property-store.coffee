@@ -46,12 +46,20 @@ class ScopedPropertyStore
   #   * `excludeSources` (optional) {Array} of {String} source names. If provided,
   #     values that  were associated with these sources during {::addProperties}
   #     will not be used.
+  #   * `bubble` (optional) {Boolean} If `false`, only values that are associated
+  #     with the entire `scopeChain` will be used; values associated with ancestor
+  #     nodes will not be used. Defaults to `true`.
   #
   # Returns the property value or `undefined` if none is found.
   getPropertyValue: (scopeChain, keyPath, options) ->
-    {sources, excludeSources} = options if options?
+    {sources, excludeSources, bubble} = options if options?
+    bubble ?= true
 
-    @withCaching "#{scopeChain}:#{keyPath}", (sources? or excludeSources?), =>
+    cacheKey = "#{scopeChain}:#{keyPath}"
+    cacheKey += ":no-bubble" unless bubble
+    skipCaching = sources? or excludeSources?
+
+    @withCaching cacheKey, skipCaching, =>
       scopes = @parseScopeChain(scopeChain)
       mergedValue = undefined
       hasMergedValue = false
@@ -71,6 +79,7 @@ class ScopedPropertyStore
                 mergedValue = value
               return mergedValue unless isPlainObject(mergedValue)
 
+        break unless bubble
         scopes.pop()
       mergedValue
 
