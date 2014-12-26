@@ -48,37 +48,31 @@ class ScopedPropertyStore
   #     will not be used.
   #
   # Returns the property value or `undefined` if none is found.
-  getPropertyValue: (originalScopeChain, keyPath, options) ->
-    if not options? and @hasCachedValue(originalScopeChain, keyPath)
-      return @getCachedValue(originalScopeChain, keyPath)
-    value = @getMergedValue(originalScopeChain, keyPath, options)
-    @setCachedValue(originalScopeChain, keyPath, value) unless options?
-    value
-
-  getMergedValue: (originalScopeChain, keyPath, options) ->
+  getPropertyValue: (scopeChain, keyPath, options) ->
     {sources, excludeSources} = options if options?
-    scopeChain = @parseScopeChain(originalScopeChain)
 
-    mergedValue = undefined
-    hasMergedValue = false
+    @withCaching "#{scopeChain}:#{keyPath}", (sources? or excludeSources?), =>
+      scopes = @parseScopeChain(scopeChain)
+      mergedValue = undefined
+      hasMergedValue = false
 
-    while scopeChain.length > 0
-      for set in @propertySets
-        continue if excludeSources? and (set.source in excludeSources)
-        continue if sources? and not (set.source in sources)
+      while scopes.length > 0
+        for set in @propertySets
+          continue if excludeSources? and (set.source in excludeSources)
+          continue if sources? and not (set.source in sources)
 
-        if set.matches(scopeChain)
-          [value, hasValue] = checkValueAtKeyPath(set.properties, keyPath)
-          if hasValue
-            if hasMergedValue
-              deepDefaults(mergedValue, value)
-            else
-              hasMergedValue = true
-              mergedValue = value
-            return mergedValue unless isPlainObject(mergedValue)
+          if set.matches(scopes)
+            [value, hasValue] = checkValueAtKeyPath(set.properties, keyPath)
+            if hasValue
+              if hasMergedValue
+                deepDefaults(mergedValue, value)
+              else
+                hasMergedValue = true
+                mergedValue = value
+              return mergedValue unless isPlainObject(mergedValue)
 
-      scopeChain.pop()
-    mergedValue
+        scopes.pop()
+      mergedValue
 
   # Public: Get *all* property objects matching the given scope chain that
   # contain a value for given key path.
@@ -183,14 +177,12 @@ class ScopedPropertyStore
   bustCache: ->
     @cache = {}
 
-  hasCachedValue: (scope, keyPath) ->
-    @cache.hasOwnProperty("#{scope}:#{keyPath}")
-
-  getCachedValue: (scope, keyPath) ->
-    @cache["#{scope}:#{keyPath}"]
-
-  setCachedValue: (scope, keyPath, value) ->
-    @cache["#{scope}:#{keyPath}"] = value
+  withCaching: (cacheKey, skipCache, callback) ->
+    return callback() if skipCache
+    if @cache.hasOwnProperty(cacheKey)
+      @cache[cacheKey]
+    else
+      @cache[cacheKey] = callback()
 
   addPropertySet: (propertySet) ->
     @propertySets.push(propertySet)
