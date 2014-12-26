@@ -39,7 +39,13 @@ class ScopedPropertyStore
   #   syntax as selectors, with each space-separated component representing one
   #   element.
   # * `keyPath` A `.` separated string of keys to traverse in the properties.
-  # * `options`
+  # * `options` (optional) {Object}
+  #   * `sources` (optional) {Array} of {String} source names. If provided, only
+  #     values that were associated with these sources during {::addProperties}
+  #     will be used.
+  #   * `excludeSources` (optional) {Array} of {String} source names. If provided,
+  #     values that  were associated with these sources during {::addProperties}
+  #     will not be used.
   #
   # Returns the property value or `undefined` if none is found.
   getPropertyValue: (originalScopeChain, keyPath, options) ->
