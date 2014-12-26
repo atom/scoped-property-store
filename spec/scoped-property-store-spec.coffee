@@ -142,6 +142,20 @@ describe "ScopedPropertyStore", ->
         expect(store.getPropertyValue('.a.b', 'x.y', excludeSources: ['test3'])).toBe 2
         expect(store.getPropertyValue('.a.b', 'x.y')).toBe 3 # shouldn't cache the previous call
 
+    describe "when the 'bubble' option is false", ->
+      it "does not return properties that match parent scopes", ->
+        store.addProperties 'test',
+          '.a': {x: y: 3}
+          '.c': {x: y: 5}
+
+        expect(store.getPropertyValue('.a', 'x.y', bubble: false)).toBe 3
+        expect(store.getPropertyValue('.a .b', 'x.y', bubble: false)).toBeUndefined()
+        expect(store.getPropertyValue('.a .b', 'x.y')).toBe 3
+
+        expect(store.getPropertyValue('.c .d', 'x.y')).toBe 5
+        expect(store.getPropertyValue('.c .d', 'x.y', bubble: false)).toBeUndefined()
+        expect(store.getPropertyValue('.c', 'x.y', bubble: false)).toBe 5
+
   describe "::getProperties(scopeChain, keyPath)", ->
     beforeEach ->
       store.addProperties 'test',
