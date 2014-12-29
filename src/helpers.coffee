@@ -38,6 +38,17 @@ deepDefaults =  (target, defaults) ->
         target[key] = defaults[key]
   return
 
+deepClone = (value) ->
+  if Array.isArray(value)
+    value.map (element) -> deepClone(element)
+  else if isPlainObject(value)
+    result = {}
+    for key in Object.keys(value)
+      result[key] = deepClone(value[key])
+    result
+  else
+    value
+
 module.exports = {
-  isPlainObject, checkValueAtKeyPath, deepDefaults
+  isPlainObject, checkValueAtKeyPath, deepClone, deepDefaults
 }

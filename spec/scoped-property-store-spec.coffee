@@ -31,19 +31,22 @@ describe "ScopedPropertyStore", ->
       expect(store.getPropertyValue('.y', 'x.y')).toBeUndefined()
 
     it "deep-merges all values for the given key path", ->
-      store.addProperties('test', '.a': {t: u: v: 1})
-      store.addProperties('test', '.a .b': {t: u: w: 2})
-      store.addProperties('test', '.a .b .c': {t: x: 3})
+      store.addProperties('test1', '.a': {t: u: v: 1})
+      store.addProperties('test2', '.a .b': {t: u: w: 2})
+      store.addProperties('test3', '.a .b .c': {t: x: 3})
       expect(store.getPropertyValue('.a .b .c', 't.u')).toEqual {v: 1, w: 2}
       expect(store.getPropertyValue('.a .b .c', 't')).toEqual {u: {v: 1, w: 2}, x: 3}
       expect(store.getPropertyValue('.a .b .c', null)).toEqual {t: {u: {v: 1, w: 2}, x: 3}}
 
-      store.addProperties('test', '.a .b .c': {t: u: false})
+      store.addProperties('test4', '.a .b .c': {t: u: false})
       expect(store.getPropertyValue('.a .b .c', 't.u')).toBe false
       expect(store.getPropertyValue('.a .b .c', 't')).toEqual {u: false, x: 3}
       expect(store.getPropertyValue('.a .b .c', null)).toEqual {t: {u: false, x: 3}}
 
-      store.addProperties('test', '.a .b .c': {t: null})
+      store.removePropertiesForSource('test3')
+      expect(store.getPropertyValue('.a .b .c', 't')).toEqual {u: false}
+
+      store.addProperties('test5', '.a .b .c': {t: null})
       expect(store.getPropertyValue('.a .b .c', 't.u')).toEqual undefined
       expect(store.getPropertyValue('.a .b .c', 't')).toEqual null
       expect(store.getPropertyValue('.a .b .c', null)).toEqual {t: null}

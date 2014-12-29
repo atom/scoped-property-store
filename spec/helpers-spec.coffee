@@ -1,4 +1,4 @@
-{checkValueAtKeyPath, deepDefaults} = require '../src/helpers'
+{checkValueAtKeyPath, deepDefaults, deepClone} = require '../src/helpers'
 
 describe "Helpers", ->
   describe ".checkValueAtKeyPath", ->
@@ -94,3 +94,23 @@ describe "Helpers", ->
       target = "stuff"
       deepDefaults(target, defaults)
       expect(target.hasOwnProperty('one')).toBe false
+
+  describe ".deepClone", ->
+    it "clones the object", ->
+      object = {a: b: [c: 'd', e: 'f']}
+      clone = deepClone(object)
+      expect(clone).toEqual(object)
+      expect(clone.a.b[0]).not.toBe(object.a.b[0])
+
+    it "doesn't clone custom-objects", ->
+      class Test
+        constructor: (@value) ->
+
+      object1 = new Test(a: 'b')
+      clone1 = deepClone(object1)
+      expect(clone1).toBe(object1)
+
+      object2 = {x: new Test(a: 'b')}
+      clone2 = deepClone(object2)
+      expect(clone2).toEqual(object2)
+      expect(clone2.x).toBe(object2.x)

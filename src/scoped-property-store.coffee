@@ -5,7 +5,7 @@ _ = require 'underscore-plus'
 {Disposable, CompositeDisposable} = require 'event-kit'
 Selector = require './selector'
 PropertySet = require './property-set'
-{isPlainObject, checkValueAtKeyPath, deepDefaults} = require './helpers'
+{isPlainObject, checkValueAtKeyPath, deepDefaults, deepClone} = require './helpers'
 
 # Public:
 module.exports =
@@ -68,7 +68,7 @@ class ScopedPropertyStore
                 deepDefaults(mergedValue, value)
               else
                 hasMergedValue = true
-                mergedValue = value
+                mergedValue = deepClone(value)
               return mergedValue unless isPlainObject(mergedValue)
 
         scopes.pop()
