@@ -17,13 +17,13 @@ class ScopedPropertyStore
 
   # Public: Add scoped properties to be queried with {::get}
   #
-  # source - A string describing these properties to allow them to be removed
+  # * `source` A string describing these properties to allow them to be removed
   #   later.
-  # propertiesBySelector - An {Object} containing CSS-selectors mapping to
+  # * `propertiesBySelector` An {Object} containing CSS-selectors mapping to
   #   {Objects} containing properties. For example: `{'.foo .bar': {x: 1, y: 2}`
   #
   # Returns a {Disposable} on which you can call `.dispose()` to remove the
-  # added properties
+  # added properties.
   addProperties: (source, propertiesBySelector, options) ->
     @bustCache()
     compositeDisposable = new CompositeDisposable
@@ -101,10 +101,10 @@ class ScopedPropertyStore
   # Public: Get *all* property objects matching the given scope chain that
   # contain a value for given key path.
   #
-  # scopeChain - This describes a location in the document. It uses the same
+  # * `scopeChain` This describes a location in the document. It uses the same
   #   syntax as selectors, with each space-separated component representing one
   #   element.
-  # keyPath - An optional `.` separated string of keys that a properties object
+  # * `keyPath` (optional) A `.` separated {String} of keys that a properties object
   #   must contain in order to be included in the returned properties.
   #
   # Returns an {Array} of property {Object}s. These are the same objects that
