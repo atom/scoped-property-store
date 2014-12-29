@@ -42,3 +42,9 @@ describe "Selector", ->
         expect(S('.foo:not(.bar, .baz)').matches('.baz .foo.bar')).toBe false
         expect(S('.foo:not(.bar, .baz)').matches('.baz .foo.baz')).toBe false
         expect(S('.foo:not(.bar, .baz)').matches('.baz .foo.qux')).toBe true
+
+  describe "::toString()", ->
+    it "strips redundant '*' expressions", ->
+      expect(S(".foo").toString()).toBe(".foo")
+      expect(S(".foo .bar").toString()).toBe(".foo .bar")
+      expect(S("*").toString()).toBe("*")

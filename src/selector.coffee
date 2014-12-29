@@ -91,4 +91,4 @@ class Selector
     (a * 100) + (b * 10) + (c * 1)
 
   toString: ->
-    @selector.toString().replace(/^\*/, '')
+    @selector.toString().replace(/\*\./g, '.')
