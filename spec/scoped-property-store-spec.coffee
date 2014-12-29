@@ -145,6 +145,47 @@ describe "ScopedPropertyStore", ->
         expect(store.getPropertyValue('.a.b', 'x.y', excludeSources: ['test3'])).toBe 2
         expect(store.getPropertyValue('.a.b', 'x.y')).toBe 3 # shouldn't cache the previous call
 
+  describe "::getAll(scopeChain, keyPath, {sources, excludeSources})", ->
+    it "returns all of the values for the key-path, together with their scope selector", ->
+      store.addProperties 'test',
+        '.c.d.e': {x: y: 100}
+        '.c': {x: y: 3}
+        '.b .c': {x: y: 2}
+        '.a .b .c': {x: y: 1}
+        '.a .b .c.d': {x: y: 0}
+        '.a': {x: y: 5}
+        '.b': {x: y: 4}
+
+      expect(store.getAll(".a .b .c.d", "x.y")).toEqual [
+        {scopeSelector: ".a .b .c.d", value: 0}
+        {scopeSelector: ".a .b .c", value: 1}
+        {scopeSelector: ".b .c", value: 2}
+        {scopeSelector: ".c", value: 3}
+        {scopeSelector: ".b", value: 4}
+        {scopeSelector: ".a", value: 5}
+      ]
+
+    it "respects the 'sources' and 'excludeSources' options", ->
+      store.addProperties 'test1',
+        '.c.d.e': {x: y: 100}
+        '.c': {x: y: 3}
+        '.b .c': {x: y: 2}
+
+      store.addProperties 'test2',
+        '.a .b .c': {x: y: 1}
+        '.a .b .c.d': {x: y: 0}
+        '.a': {x: y: 5}
+        '.b': {x: y: 4}
+
+      expect(store.getAll(".a .b .c.d", "x.y", sources: ["test1"])).toEqual [
+        {scopeSelector: ".b .c", value: 2}
+        {scopeSelector: ".c", value: 3}
+      ]
+      expect(store.getAll(".a .b .c.d", "x.y", excludeSources: ["test2"])).toEqual [
+        {scopeSelector: ".b .c", value: 2}
+        {scopeSelector: ".c", value: 3}
+      ]
+
   describe "::getProperties(scopeChain, keyPath)", ->
     beforeEach ->
       store.addProperties 'test',

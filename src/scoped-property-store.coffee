@@ -51,7 +51,7 @@ class ScopedPropertyStore
   getPropertyValue: (scopeChain, keyPath, options) ->
     {sources, excludeSources} = options if options?
 
-    @withCaching "#{scopeChain}:#{keyPath}", (sources? or excludeSources?), =>
+    @withCaching "getPropertyValue:#{scopeChain}:#{keyPath}", (sources? or excludeSources?), =>
       scopes = @parseScopeChain(scopeChain)
       mergedValue = undefined
       hasMergedValue = false
@@ -73,6 +73,30 @@ class ScopedPropertyStore
 
         scopes.pop()
       mergedValue
+
+  # Public: Get *all* values for the given key-path in a given scope.
+  getAll: (scopeChain, keyPath, options) ->
+    {sources, excludeSources} = options if options?
+
+    scopes = @parseScopeChain(scopeChain)
+    values = []
+
+    @withCaching "getAll:#{scopeChain}:#{keyPath}", (sources? or excludeSources?), =>
+      while scopes.length > 0
+        for set in @propertySets
+          continue if excludeSources? and (set.source in excludeSources)
+          continue if sources? and not (set.source in sources)
+
+          if set.matches(scopes)
+            [value, hasValue] = checkValueAtKeyPath(set.properties, keyPath)
+            if hasValue
+              values.push(
+                scopeSelector: set.selector.toString(),
+                value: value
+              )
+
+        scopes.pop()
+      values
 
   # Public: Get *all* property objects matching the given scope chain that
   # contain a value for given key path.
