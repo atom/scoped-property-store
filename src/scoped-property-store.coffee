@@ -98,29 +98,6 @@ class ScopedPropertyStore
         scopes.pop()
       values
 
-  # Public: Get *all* property objects matching the given scope chain that
-  # contain a value for given key path.
-  #
-  # * `scopeChain` This describes a location in the document. It uses the same
-  #   syntax as selectors, with each space-separated component representing one
-  #   element.
-  # * `keyPath` (optional) A `.` separated {String} of keys that a properties object
-  #   must contain in order to be included in the returned properties.
-  #
-  # Returns an {Array} of property {Object}s. These are the same objects that
-  # are nested beneath the selectors in {::addProperties}.
-  getProperties: (scopeChain, keyPath) ->
-    values = []
-
-    scopeChain = @parseScopeChain(scopeChain)
-    while scopeChain.length > 0
-      for set in @propertySets
-        if set.matches(scopeChain) and (not keyPath? or set.has(keyPath))
-          values.push(set.properties)
-      scopeChain.pop()
-
-    values
-
   # Public: Get *all* properties for a given source.
   #
   # ## Examples
