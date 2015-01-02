@@ -22,7 +22,7 @@
   ],
   "dependencies": {
     "atom-slick": "^2",
-    "event-kit": "^0.7",
+    "event-kit": "^1.0.0",
     "grim": "^1.0.0",
     "key-path-helpers": "^0.1.0",
     "underscore-plus": "^1.6.3"
