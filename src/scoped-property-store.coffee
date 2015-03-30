@@ -1,7 +1,7 @@
 slick = require 'atom-slick'
 _ = require 'underscore-plus'
 {getValueAtKeyPath} = require 'key-path-helpers'
-{deprecate} = require 'grim'
+{includeDeprecatedAPIs, deprecate} = require 'grim'
 {Disposable, CompositeDisposable} = require 'event-kit'
 Selector = require './selector'
 PropertySet = require './property-set'
@@ -196,7 +196,7 @@ class ScopedPropertyStore
     scopeChain = scopeChain.replace @escapeCharacterRegex, (match) -> "\\#{match[0]}"
     scope for scope in slick.parse(scopeChain)[0] ? []
 
-  # Deprecated:
+if includeDeprecatedAPIs
   removeProperties: (source) ->
     deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
     @removePropertiesForSource(source)
