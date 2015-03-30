@@ -197,6 +197,6 @@ class ScopedPropertyStore
     scope for scope in slick.parse(scopeChain)[0] ? []
 
 if includeDeprecatedAPIs
-  removeProperties: (source) ->
+  ScopedPropertyStore::removeProperties = (source) ->
     deprecate '::addProperties() now returns a disposable. Call .dispose() on that instead.'
     @removePropertiesForSource(source)
