@@ -17,6 +17,7 @@ class Selector
         selectorComponent.notSelectors.push(@create(pseudoClass.value)...)
       else
         console.warn "Unsupported pseudo-selector: #{pseudoClass.name}"
+    return
 
   constructor: (@selector, options) ->
     priority = options?.priority ? 0
