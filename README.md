@@ -1,4 +1,5 @@
-# Scoped Property Store [![Build Status](https://travis-ci.org/atom/scoped-property-store.svg?branch=master)](https://travis-ci.org/atom/scoped-property-store)
+##### Atom and all repositories under Atom will be archived on December 15, 2022. Learn more in our [official announcement](https://github.blog/2022-06-08-sunsetting-atom/)
+ # Scoped Property Store [![Build Status](https://travis-ci.org/atom/scoped-property-store.svg?branch=master)](https://travis-ci.org/atom/scoped-property-store)
 
 Stores and retrieves properties associated with CSS selectors.
 
